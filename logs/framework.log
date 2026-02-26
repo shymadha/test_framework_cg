@@ -1,0 +1,7 @@
+2026-02-26 12:43:16,831 | INFO | TestEngine | Pre-test phase
+2026-02-26 12:43:16,833 | INFO | BeaglePlatform | Setting up Beagle
+2026-02-26 12:43:17,432 | INFO | CPUDetectionTest | Running CPU Detection Test
+2026-02-26 12:43:17,886 | INFO | CPUCoreCountTest | Running CPU Core Count Test
+2026-02-26 12:43:18,141 | INFO | TestEngine | CPUDetectionTest: PASS
+2026-02-26 12:43:18,142 | INFO | TestEngine | CPUCoreCountTest: PASS
+2026-02-26 12:43:18,142 | INFO | BeaglePlatform | Cleaning up Beagle

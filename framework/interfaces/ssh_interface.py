@@ -1,0 +1,76 @@
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import paramiko
+import socket
+from interfaces.base_interface import BaseInterface
+from core.logger import setup_logger
+
+class SSHInterface(BaseInterface):
+
+    def __init__(self, host, username, password):
+        self.logger = setup_logger("SSHInterface")
+        self.host = host
+        self.username = username
+        self.password = password
+        self.client=None
+        self.key_file = None
+        self.port = 22
+        self.timeout=10
+
+    def connect(self):
+        try:
+            self.client = paramiko.SSHClient()
+            self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+            if self.key_file:
+                private_key = paramiko.RSAKey.from_private_key_file(self.key_file)
+                self.client.connect(
+                    hostname=self.host,
+                    port=self.port,
+                    username=self.username,
+                    pkey=private_key,
+                    timeout=self.timeout
+                )
+            else:
+                self.client.connect(
+                    hostname=self.host,
+                    port=self.port,
+                    username=self.username,
+                    password=self.password,
+                    timeout=self.timeout
+                )
+
+            print(f"[CONNECTED] {self.host}")
+
+        except (paramiko.SSHException, socket.error) as e:
+            raise Exception(f"SSH Connection failed: {e}")
+
+    def execute(self, command):
+        if not self.client:
+            raise Exception("SSH client not connected.")
+
+        stdin, stdout, stderr = self.client.exec_command(command)
+        exit_status = stdout.channel.recv_exit_status()
+
+        return (
+            stdout.read().decode().strip(),
+            stderr.read().decode().strip(),
+            exit_status,
+        )
+
+    def close(self):
+        if self.client:
+            self.client.close()
+            print(f"[DISCONNECTED] {self.host}")
+        
+
+
+
+
+# ssh = SSHInterface("10.203.238.6","siva_tk","abc1234")
+# ssh.connect()
+# stdout= ssh.execute("lscpu")
+# print(stdout)
+# ssh.close()
