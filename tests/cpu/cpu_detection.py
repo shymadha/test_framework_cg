@@ -1,6 +1,6 @@
 from tests.base_test import BaseTest
 
-class CPUDetectionTest(BaseTest):
+class CpuDetectionTest(BaseTest):
 
     def run(self):
         self.logger.info("Running CPU Detection Test")

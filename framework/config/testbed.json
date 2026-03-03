@@ -6,9 +6,6 @@
     "host": "10.203.238.6",
     "username": "shyamala",
     "password": "shy1234"
-  },
-  "tests": [
-    "tests.cpu.cpu_detection.CPUDetectionTest",
-    "tests.cpu.cpu_core_count.CPUCoreCountTest"
-  ]
+  }
+  
 }

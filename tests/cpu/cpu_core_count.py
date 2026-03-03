@@ -1,6 +1,6 @@
 from tests.base_test import BaseTest
 
-class CPUCoreCountTest(BaseTest):
+class CpuCoreCountTest(BaseTest):
 
     def run(self):
         self.logger.info("Running CPU Core Count Test")
