@@ -1,0 +1,20 @@
+
+{
+  "platform": "beagle",
+  	"interface": {
+		"type": "ssh",
+		"host": "10.203.238.6",
+		"username": "shyamala",
+		"password": "shy1234"
+	  },
+    "tests": {
+      "CpuDetectionTest": {
+        "expected_vendor": "Intel"
+      },
+      "CpuCoreCountTest":
+      {
+        "min_cores": 4
+      }
+    }
+ 
+}

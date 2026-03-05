@@ -1,80 +1,10 @@
-2026-02-26 12:43:16,831 | INFO | TestEngine | Pre-test phase
-2026-02-26 12:43:16,833 | INFO | BeaglePlatform | Setting up Beagle
-2026-02-26 12:43:17,432 | INFO | CPUDetectionTest | Running CPU Detection Test
-2026-02-26 12:43:17,886 | INFO | CPUCoreCountTest | Running CPU Core Count Test
-2026-02-26 12:43:18,141 | INFO | TestEngine | CPUDetectionTest: PASS
-2026-02-26 12:43:18,142 | INFO | TestEngine | CPUCoreCountTest: PASS
-2026-02-26 12:43:18,142 | INFO | BeaglePlatform | Cleaning up Beagle
-2026-03-02 18:53:26,098 | INFO | TestEngine | Pre-test phase
-2026-03-02 18:53:26,100 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-02 18:56:00,093 | INFO | TestEngine | Pre-test phase
-2026-03-02 18:56:00,095 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-02 19:15:14,956 | INFO | TestEngine | Pre-test phase
-2026-03-02 19:15:14,958 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-02 19:15:15,557 | INFO | CPUDetectionTest | Running CPU Detection Test
-2026-03-02 19:15:15,827 | INFO | CPUCoreCountTest | Running CPU Core Count Test
-2026-03-02 19:15:16,104 | INFO | TestEngine | CPUDetectionTest: PASS
-2026-03-02 19:15:16,105 | INFO | TestEngine | CPUCoreCountTest: PASS
-2026-03-02 19:15:16,105 | INFO | BeaglePlatform | Cleaning up Beagle
-2026-03-02 19:16:45,424 | INFO | TestEngine | Pre-test phase
-2026-03-02 19:16:45,426 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-02 19:16:46,014 | INFO | CPUDetectionTest | Running CPU Detection Test
-2026-03-02 19:16:46,303 | INFO | CPUCoreCountTest | Running CPU Core Count Test
-2026-03-02 19:16:46,529 | INFO | TestEngine | CPUDetectionTest: PASS
-2026-03-02 19:16:46,530 | INFO | TestEngine | CPUCoreCountTest: PASS
-2026-03-02 19:16:46,531 | INFO | BeaglePlatform | Cleaning up Beagle
-2026-03-03 10:18:27,182 | INFO | TestEngine | Pre-test phase
-2026-03-03 10:18:27,196 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-03 10:34:00,252 | INFO | TestEngine | Pre-test phase
-2026-03-03 10:34:00,258 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-03 10:36:49,319 | INFO | TestEngine | Pre-test phase
-2026-03-03 10:36:49,325 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-03 10:42:10,356 | INFO | TestEngine | Pre-test phase
-2026-03-03 10:42:10,359 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-03 10:42:58,951 | INFO | TestEngine | Pre-test phase
-2026-03-03 10:42:58,954 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-03 10:43:25,695 | INFO | TestEngine | Pre-test phase
-2026-03-03 10:43:25,701 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-03 10:57:14,694 | INFO | TestEngine | Pre-test phase
-2026-03-03 10:57:14,698 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-03 10:57:15,080 | INFO | CpuCoreCountTest | Running CPU Core Count Test
-2026-03-03 10:57:15,253 | INFO | TestEngine | CpuCoreCountTest: PASS
-2026-03-03 10:57:15,253 | INFO | BeaglePlatform | Cleaning up Beagle
-2026-03-03 11:06:32,744 | INFO | TestEngine | Pre-test phase
-2026-03-03 11:06:32,750 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-03 11:06:33,347 | INFO | CpuCoreCountTest | Running CPU Core Count Test
-2026-03-03 11:06:33,614 | INFO | TestEngine | CpuCoreCountTest: PASS
-2026-03-03 11:06:33,615 | INFO | BeaglePlatform | Cleaning up Beagle
-2026-03-03 11:15:15,331 | INFO | TestEngine | Pre-test phase
-2026-03-03 11:15:15,337 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-03 11:15:15,714 | INFO | CpuCoreCountTest | Running CPU Core Count Test
-2026-03-03 11:15:15,913 | INFO | TestEngine | CpuCoreCountTest: PASS
-2026-03-03 11:15:15,915 | INFO | BeaglePlatform | Cleaning up Beagle
-2026-03-03 11:15:38,212 | INFO | TestEngine | Pre-test phase
-2026-03-03 11:15:38,221 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-03 11:18:06,476 | INFO | TestEngine | Pre-test phase
-2026-03-03 11:18:06,481 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-03 11:18:07,114 | INFO | CpuCoreCountTest | Running CPU Core Count Test
-2026-03-03 11:18:07,346 | INFO | CpuDetectionTest | Running CPU Detection Test
-2026-03-03 11:18:07,595 | INFO | TestEngine | CpuCoreCountTest: PASS
-2026-03-03 11:18:07,597 | INFO | TestEngine | CpuDetectionTest: PASS
-2026-03-03 11:18:07,597 | INFO | BeaglePlatform | Cleaning up Beagle
-2026-03-03 11:18:21,471 | INFO | TestEngine | Pre-test phase
-2026-03-03 11:18:21,474 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-03 11:18:22,086 | INFO | CpuCoreCountTest | Running CPU Core Count Test
-2026-03-03 11:18:22,340 | INFO | TestEngine | CpuCoreCountTest: PASS
-2026-03-03 11:18:22,342 | INFO | BeaglePlatform | Cleaning up Beagle
-2026-03-03 11:18:28,288 | INFO | TestEngine | Pre-test phase
-2026-03-03 11:18:28,294 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-03 11:18:28,703 | INFO | CpuCoreCountTest | Running CPU Core Count Test
-2026-03-03 11:18:28,862 | INFO | CpuDetectionTest | Running CPU Detection Test
-2026-03-03 11:18:29,035 | INFO | TestEngine | CpuCoreCountTest: PASS
-2026-03-03 11:18:29,037 | INFO | TestEngine | CpuDetectionTest: PASS
-2026-03-03 11:18:29,038 | INFO | BeaglePlatform | Cleaning up Beagle
-2026-03-03 12:06:51,285 | INFO | TestEngine | Pre-test phase
-2026-03-03 12:06:51,291 | INFO | BeaglePlatform | Setting up Beagle
-2026-03-03 12:06:51,696 | INFO | CpuCoreCountTest | Running CPU Core Count Test
-2026-03-03 12:06:51,862 | INFO | CpuDetectionTest | Running CPU Detection Test
-2026-03-03 12:06:52,017 | INFO | TestEngine | CpuCoreCountTest: PASS
-2026-03-03 12:06:52,019 | INFO | TestEngine | CpuDetectionTest: PASS
-2026-03-03 12:06:52,020 | INFO | BeaglePlatform | Cleaning up Beagle
+2026-03-05 06:29:56,814 | INFO | TestEngine | Pre-test phase
+2026-03-05 06:29:56,824 | INFO | BeaglePlatform | Setting up Beagle
+2026-03-05 06:29:57,444 | INFO | CpuDetectionTest | Running CPU Detection Test
+2026-03-05 06:29:57,843 | INFO | TestEngine | CpuDetectionTest: PASS
+2026-03-05 06:29:57,844 | INFO | BeaglePlatform | Cleaning up Beagle
+2026-03-05 06:32:02,959 | INFO | TestEngine | Pre-test phase
+2026-03-05 06:32:02,967 | INFO | BeaglePlatform | Setting up Beagle
+2026-03-05 06:32:03,360 | INFO | CpuDetectionTest | Running CPU Detection Test
+2026-03-05 06:32:03,709 | INFO | TestEngine | CpuDetectionTest: PASS
+2026-03-05 06:32:03,709 | INFO | BeaglePlatform | Cleaning up Beagle

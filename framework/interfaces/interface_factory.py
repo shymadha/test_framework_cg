@@ -10,17 +10,17 @@ class InterfaceFactory:
     @staticmethod
     def create_interface(config):
 
-        if config["type"] == "ssh":
+        if  config["interface"]["type"] == "ssh":
             return SSHInterface(
-                config["host"],
-                config["username"],
-                config["password"]
+                config["interface"]["host"],
+                config["interface"]["username"],
+                config["interface"]["password"]
             )
 
-        elif config["type"] == "serial":
+        elif  config["interface"]["type"] == "serial":
             return SerialInterface(
-                config["port"],
-                config["baudrate"]
+                config["interface"]["port"],
+                config["interface"]["baudrate"]
             )
 
         else:
