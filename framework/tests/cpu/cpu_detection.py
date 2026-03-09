@@ -13,13 +13,13 @@ for parent in current.parents:
 
 import argparse
 from framework.core.test_engine import TestEngine
-from framework.core.parser import ParseUserInput
+from framework.core.user_input_parser import ParseUserInput
 from tests.base_test import BaseTest
 
 class CpuDetectionTest(BaseTest):
     def do_test(self):
         self.logger.info("Running CPU Detection Test")
-        output,error,exit_status = self.platform.interface.execute("lscpu")
+        output,error,exit_status = self.platform_obj.test_interface_obj.execute("lscpu")
        
         if output:
             self.result.set_result(True, "CPU detected")
@@ -29,11 +29,6 @@ class CpuDetectionTest(BaseTest):
             print(f"The test err is {error}")
             
 if __name__ == "__main__":
-    test = Path(__file__).resolve()
-    print(f"The test_name is {test}")
-    user_input = ParseUserInput(test)
-    print("Loaded Config:")
-    print(user_input.user_config)
-    
-    engine = TestEngine(user_input)
-    engine.run()
+        
+    test = CpuDetectionTest()
+    test.run()

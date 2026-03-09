@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class BaseInterface(ABC):
+class TestInterface(ABC):
 
     @abstractmethod
     def connect(self):

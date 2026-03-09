@@ -6,15 +6,19 @@ from abc import ABC, abstractmethod
 from core.logger import setup_logger
 
 class BasePlatform():
-    def __init__(self, interface):
-        self.interface = interface
+    def __init__(self):
         self.logger = setup_logger(self.__class__.__name__)
+        self.test_interface_list = []
+        self.test_interface_obj = None
 
-    def setup(self):
-        self.logger.info("Setting up Beagle")
-        self.interface.connect()
+    def add_test_interface(self, interface_obj):
+        self.test_interface_list.append(interface_obj)
+        self.test_interface_obj = interface_obj
 
+
+    def connect_test_interface(self):
+        for intf in self.test_interface_list:
+            intf.connect()
     
-    def cleanup(self):
-        self.logger.info("Cleaning up Beagle")
-        self.interface.close()
+    def execute(self, command):
+        return self.test_interface_obj.execute(command)

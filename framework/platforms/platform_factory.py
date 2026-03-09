@@ -6,10 +6,10 @@ from platforms.beagle_platform import BeaglePlatform
 class PlatformFactory:
 
     @staticmethod
-    def create_platform(name, interface):
+    def create_platform(name):
 
         if name.lower() == "beagle":
-            return BeaglePlatform(interface)
+            return BeaglePlatform()
 
         else:
             raise ValueError("Unsupported platform")

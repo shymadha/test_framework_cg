@@ -2,7 +2,6 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 
-
 def setup_logger(name: str = "TestFramework",
                  log_level=logging.INFO,
                  log_dir: str = "logs") -> logging.Logger:

@@ -3,9 +3,9 @@ import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import serial
-from interfaces.base_interface import BaseInterface
+from interfaces.base_interface import TestInterface
 
-class SerialInterface(BaseInterface):
+class SerialInterface(TestInterface):
 
     def __init__(self, config):
         self.port = config["port"]

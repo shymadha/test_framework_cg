@@ -4,10 +4,10 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import paramiko
 import socket
-from interfaces.base_interface import BaseInterface
+from interfaces.base_interface import TestInterface
 from core.logger import setup_logger
 
-class SSHInterface(BaseInterface):
+class SSHInterface(TestInterface):
 
     def __init__(self, host, username, password):
         self.logger = setup_logger("SSHInterface")
@@ -42,13 +42,15 @@ class SSHInterface(BaseInterface):
                     timeout=self.timeout
                 )
 
-            print(f"[CONNECTED] {self.host}")
+            self.logger.info(f"[CONNECTED] {self.host}")
 
         except (paramiko.SSHException, socket.error) as e:
+            self.logger.error(f"SSH Connection failed: {e}")
             raise Exception(f"SSH Connection failed: {e}")
 
     def execute(self, command):
         if not self.client:
+            self.logger.error(f"SSH Connection failed: {e}")
             raise Exception("SSH client not connected.")
 
         stdin, stdout, stderr = self.client.exec_command(command)
@@ -63,7 +65,7 @@ class SSHInterface(BaseInterface):
     def close(self):
         if self.client:
             self.client.close()
-            print(f"[DISCONNECTED] {self.host}")
+            self.logger.info(f"[DISCONNECTED] {self.host}")
         
 
 
