@@ -22,7 +22,7 @@ class ParseUserInput:
         return self.user_input
 
     def __create_platform_obj(self):
-        platform_name = self.user_input["platform"]
+        platform_name = self.user_input["SUT"][0]["platform"]
         platform_obj = PlatformFactory.create_platform(platform_name)
         return platform_obj
         
@@ -30,7 +30,6 @@ class ParseUserInput:
     def create_dev_obj(self,user_input_dict):
         self.platform_obj = self.__create_platform_obj()
         test_interface = InterfaceFactory.create_interface(user_input_dict)
-
         self.platform_obj.add_test_interface(test_interface)
         self.platform_obj.connect_test_interface()
     
@@ -47,14 +46,6 @@ class ParseUserInput:
 
         return parser.parse_args()
 
-    def _load_config(self, config_path):
-        path= Path(config_path).expanduser().resolve()
-        if not path.is_file():
-            raise FileNotFoundError(f"Config file not found: {config_path}")
-
-        with path.open("r") as f:
-            return json.load(f)
-        
     def get_platform_obj(self):
         return self.platform_obj
 

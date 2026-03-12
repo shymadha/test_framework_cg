@@ -9,22 +9,26 @@ from framework.platforms.platform_factory import PlatformFactory
 
 class TestEngine:
     def __init__(self):
-        self.logger = setup_logger("TestEngine")
+        self.test_engine_logger = setup_logger("TestEngine")
         self.user_input = ParseUserInput()
         self.platform_obj = None
         
     def pre_test(self):
-        self.logger.info("Pre-test phase")
+        self.test_engine_logger.info("Pre-test phase")
         self.user_input_dict = self.user_input.parse_user_input(self.user_input.args.config)
         self.user_input.create_dev_obj(self.user_input_dict)
         self.platform_obj = self.user_input.get_platform_obj()
+        self.platform_obj.detect_os()
         
     def run(self):
         self.pre_test()
-        self.do_test()
-        self.post_test()      
+        status = self.do_test()
+        status = self.post_test()
+        return sys.exit(status)      
 
     def post_test(self):
         verdict = "PASS" if self.result.passed else "FAIL"
         self.logger.info(f"{self.__class__.__name__}: {verdict}")
-        self.platform_obj.test_interface_obj.close()
+        self.platform_obj.close()
+        
+    

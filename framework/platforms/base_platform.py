@@ -10,15 +10,39 @@ class BasePlatform():
         self.logger = setup_logger(self.__class__.__name__)
         self.test_interface_list = []
         self.test_interface_obj = None
+        self.os_type = None
 
     def add_test_interface(self, interface_obj):
         self.test_interface_list.append(interface_obj)
         self.test_interface_obj = interface_obj
 
-
     def connect_test_interface(self):
         for intf in self.test_interface_list:
             intf.connect()
     
-    def execute(self, command):
+    def exec_cmd(self, command):
         return self.test_interface_obj.execute(command)
+    
+    def detect_os(self):
+        output, error, status = self.exec_cmd("uname")
+        if status == 0:
+            if "Linux" in output:
+                self.os_type = "linux"
+            elif "Darwin" in output:
+                self.os_type = "mac"
+        else:
+            output, error, status = self.execute("ver")
+            if "Windows" in output:
+                self.os_type = "windows"
+
+        self.logger.info(f"Detected OS: {self.os_type}")
+        return self.os_type
+    
+    def get_os_type(self):
+        if self.os_type is None:
+            self.detect_os()
+        return self.os_type
+    
+    def close(self):
+        return self.test_interface_obj.close()
+        

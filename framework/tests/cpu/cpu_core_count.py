@@ -16,9 +16,11 @@ from framework.core.test_engine import TestEngine
 from framework.core.user_input_parser import ParseUserInput
 from tests.base_test import BaseTest
 from core.testbed_utils import TestbedUtils
+from framework.utils.cpu_utils import CpuUtil
 
 class CpuCoreCountTest(BaseTest):
     def pre_test(self):
+        super().pre_test()
         self.logger.info("Executing pre-test for CpuCoreCount")
         testbed_utils = TestbedUtils(self.user_input.args.config)
         self.min_cores =testbed_utils.get_value("min_cores")
@@ -26,14 +28,14 @@ class CpuCoreCountTest(BaseTest):
         
     def do_test(self):
         self.logger.info("Running CPU Core Count Test")
-        output,error,exit_status = self.platform_obj.test_interface_obj.execute("nproc")
-        #xecute("nproc")
-        print(f"The test ouput is {output}")
+        output,error,exit_status = CpuUtil.get_core_count(self.platform_obj)
+        self.logger.info(f"The core count is {output}")
         if output and int(output) >= self.min_cores:
             self.result.set_result(True, "Valid core count")
         else:
             self.result.set_result(False, "Invalid core count")
-            
+        return exit_status    
+          
 if __name__ == "__main__":
     test = CpuCoreCountTest()
     test.run()
