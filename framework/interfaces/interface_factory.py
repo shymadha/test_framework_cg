@@ -10,18 +10,27 @@ class InterfaceFactory:
     @staticmethod
     def create_interface(config):
 
-        if  config["interface"]["type"] == "ssh":
-            return SSHInterface(
-                config["interface"]["host"],
-                config["interface"]["username"],
-                config["interface"]["password"]
-            )
+        
+        try:
+            Interface_type = config["interface"]["type"]       #added  line
 
-        elif  config["interface"]["type"] == "serial":
-            return SerialInterface(
-                config["interface"]["port"],
-                config["interface"]["baudrate"]
-            )
+            if  config["interface"]["type"] == "ssh":
+                InterfaceFactory.logger.info("Creating SSH Interface")  # added line
+                return SSHInterface(
+                    config["interface"]["host"],
+                    config["interface"]["username"],
+                    config["interface"]["password"]
+                )
 
-        else:
-            raise ValueError("Unsupported interface type")
+            elif  config["interface"]["type"] == "serial":
+                InterfaceFactory.looger.info("Creating Serial Interface")  # added line
+                return SerialInterface(
+                    config["interface"]["port"],
+                    config["interface"]["baudrate"]
+                )
+
+            else:
+                raise ValueError("Unsupported interface type")
+            
+        except Exception as e:                                               # added line 
+            InterfaceFactory.logger.error(f"Interface creation failed: {e}")

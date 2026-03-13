@@ -12,13 +12,34 @@ class BasePlatform():
         self.test_interface_obj = None
 
     def add_test_interface(self, interface_obj):
+        # Logging when interface is created 
+        self.logger.info(f"Adding Test Interface: {interface_obj.__classs__.__name__}") # Added info
         self.test_interface_list.append(interface_obj)
         self.test_interface_obj = interface_obj
 
 
     def connect_test_interface(self):
+        # Logging during connection 
+        self.logger.info("Connecting test interface")
         for intf in self.test_interface_list:
-            intf.connect()
+            # try/Except for connection.
+            try:                                                                    # added info    
+                self.logger.info(f"connecting {intf.__class__.__name__}")
+                intf.connect()
+            except Exception as e:
+                self.logger.error(f"Failed to connect interface: {e}")
+                raise
     
     def execute(self, command):
-        return self.test_interface_obj.execute(command)
+        # Safety check before excute
+        if not self.test_interface_obj:                                     #added info
+            raise Exception ("No test interface configured")
+        # Logging command execution
+        self.logger.info(f" Executing command : {command}")
+
+        try:                                                                    #added info
+            return self.test_interface_obj.execute(command)
+        except Exception as e:
+            self.logger.error(f"Command execution failed: {e}")
+            raise
+        
