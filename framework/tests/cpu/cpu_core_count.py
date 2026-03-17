@@ -30,11 +30,17 @@ class CpuCoreCountTest(BaseTest):
         self.logger.info("Running CPU Core Count Test")
         output,error,exit_status = CpuUtil.get_core_count(self.platform_obj)
         self.logger.info(f"The core count is {output}")
-        if output and int(output) >= self.min_cores:
+        output = self.user_input.parse_int_output(output)
+        if output >= self.min_cores:
             self.result.set_result(True, "Valid core count")
         else:
             self.result.set_result(False, "Invalid core count")
-        return exit_status    
+        
+        return exit_status  
+     
+        
+    
+    
           
 if __name__ == "__main__":
     test = CpuCoreCountTest()

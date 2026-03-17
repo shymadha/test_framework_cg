@@ -15,8 +15,7 @@ class TestEngine:
         
     def pre_test(self):
         self.test_engine_logger.info("Pre-test phase")
-        self.user_input_dict = self.user_input.parse_user_input(self.user_input.args.config)
-        self.user_input.create_dev_obj(self.user_input_dict)
+        self.user_input.create_dev_obj()
         self.platform_obj = self.user_input.get_platform_obj()
         self.platform_obj.detect_os()
         

@@ -2,11 +2,11 @@ class CpuUtil:
 
     @staticmethod
     def get_core_count(platform_obj):
-        output,error,exit_status = platform_obj.exec_cmd("wmic cpu get NumberOfCore")
+        output,error,exit_status = platform_obj.exec_cmd("wmic cpu get NumberOfCores","ssh")
         return output,error,exit_status
 
 
     @staticmethod
     def get_cpu_info(platform_obj):
-        output,error,exit_status = platform_obj.exec_cmd("wmic cpu get name")
+        output,error,exit_status = platform_obj.exec_cmd("wmic cpu get name","ssh")
         return output,error,exit_status

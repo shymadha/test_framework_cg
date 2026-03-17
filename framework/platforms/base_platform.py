@@ -8,30 +8,39 @@ from core.logger import setup_logger
 class BasePlatform():
     def __init__(self):
         self.logger = setup_logger(self.__class__.__name__)
-        self.test_interface_list = []
-        self.test_interface_obj = None
+        self.test_interfaces = {}
         self.os_type = None
 
-    def add_test_interface(self, interface_obj):
-        self.test_interface_list.append(interface_obj)
-        self.test_interface_obj = interface_obj
+    def add_test_interface(self, interface_obj,interface_type):
+        if not interface_type:
+            raise ValueError("Interface type must be provided")
+        self.test_interfaces[interface_type] = interface_obj
 
     def connect_test_interface(self):
-        for intf in self.test_interface_list:
+        for intf in self.test_interfaces.values():
             intf.connect()
     
-    def exec_cmd(self, command):
+    def exec_cmd(self, command,interface_type=None):
+        if interface_type:
+            intf = self.test_interfaces.get(interface_type)
+
+        if intf:
+            return intf.execute(command)
+        else:
+            raise ValueError(f"Interface {interface_type} not found")
+
         return self.test_interface_obj.execute(command)
+        
     
     def detect_os(self):
-        output, error, status = self.exec_cmd("uname")
+        output, error, status = self.exec_cmd("uname","ssh")
         if status == 0:
             if "Linux" in output:
                 self.os_type = "linux"
             elif "Darwin" in output:
                 self.os_type = "mac"
         else:
-            output, error, status = self.execute("ver")
+            output, error, status = self.exec_cmd("ver")
             if "Windows" in output:
                 self.os_type = "windows"
 
@@ -44,5 +53,6 @@ class BasePlatform():
         return self.os_type
     
     def close(self):
-        return self.test_interface_obj.close()
+        for intf in self.test_interfaces.values():
+            intf.close()
         
