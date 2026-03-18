@@ -13,12 +13,6 @@ class BaseTest(TestEngine):
         super().__init__()
         self.logger = setup_logger(self.__class__.__name__)
         self.result = TestResult(self.__class__.__name__)
-
         
-    def run(self):
-        super().pre_test()
-        self.pre_test()
-        status = self.do_test()
-        super().post_test()
-        return status
+
     

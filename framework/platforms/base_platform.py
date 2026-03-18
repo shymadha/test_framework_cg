@@ -8,38 +8,51 @@ from core.logger import setup_logger
 class BasePlatform():
     def __init__(self):
         self.logger = setup_logger(self.__class__.__name__)
-        self.test_interface_list = []
-        self.test_interface_obj = None
+        self.test_interfaces = {}
+        self.os_type = None
 
-    def add_test_interface(self, interface_obj):
-        # Logging when interface is created 
-        self.logger.info(f"Adding Test Interface: {interface_obj.__classs__.__name__}") # Added info
-        self.test_interface_list.append(interface_obj)
-        self.test_interface_obj = interface_obj
-
+    def add_test_interface(self, interface_obj,interface_type):
+        if not interface_type:
+            raise ValueError("Interface type must be provided")
+        self.test_interfaces[interface_type] = interface_obj
 
     def connect_test_interface(self):
-        # Logging during connection 
-        self.logger.info("Connecting test interface")
-        for intf in self.test_interface_list:
-            # try/Except for connection.
-            try:                                                                    # added info    
-                self.logger.info(f"connecting {intf.__class__.__name__}")
-                intf.connect()
-            except Exception as e:
-                self.logger.error(f"Failed to connect interface: {e}")
-                raise
+        for intf in self.test_interfaces.values():
+            intf.connect()
     
-    def execute(self, command):
-        # Safety check before excute
-        if not self.test_interface_obj:                                     #added info
-            raise Exception ("No test interface configured")
-        # Logging command execution
-        self.logger.info(f" Executing command : {command}")
+    def exec_cmd(self, command,interface_type=None):
+        if interface_type:
+            intf = self.test_interfaces.get(interface_type)
 
-        try:                                                                    #added info
-            return self.test_interface_obj.execute(command)
-        except Exception as e:
-            self.logger.error(f"Command execution failed: {e}")
-            raise
+        if intf:
+            return intf.execute(command)
+        else:
+            raise ValueError(f"Interface {interface_type} not found")
+
+        return self.test_interface_obj.execute(command)
+        
+    
+    def detect_os(self):
+        output, error, status = self.exec_cmd("uname","ssh")
+        if status == 0:
+            if "Linux" in output:
+                self.os_type = "linux"
+            elif "Darwin" in output:
+                self.os_type = "mac"
+        else:
+            output, error, status = self.exec_cmd("ver")
+            if "Windows" in output:
+                self.os_type = "windows"
+
+        self.logger.info(f"Detected OS: {self.os_type}")
+        return self.os_type
+    
+    def get_os_type(self):
+        if self.os_type is None:
+            self.detect_os()
+        return self.os_type
+    
+    def close(self):
+        for intf in self.test_interfaces.values():
+            intf.close()
         
