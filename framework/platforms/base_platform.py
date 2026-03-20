@@ -21,6 +21,7 @@ class BasePlatform():
             intf.connect()
     
     def exec_cmd(self, command,interface_type=None):
+        intf = None
         if interface_type:
             intf = self.test_interfaces.get(interface_type)
 
@@ -40,7 +41,7 @@ class BasePlatform():
             elif "Darwin" in output:
                 self.os_type = "mac"
         else:
-            output, error, status = self.exec_cmd("ver")
+            output, error, status = self.exec_cmd("ver","ssh")
             if "Windows" in output:
                 self.os_type = "windows"
 

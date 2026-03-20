@@ -6,7 +6,7 @@ All OS-specific classes (Windows/Linux) must inherit from OSBase.
 import platform
 import socket
 import time
-import psutil
+#import psutil
 
 class OSBase:
     def __init__(self, platform_obj):
@@ -41,9 +41,10 @@ class OSBase:
     # ---------- System Health APIs ----------
     def get_uptime(self):
         """Return system uptime (to be implemented by child class)."""
-        boot_time = psutil.boot_time()   # seconds since epoch
-        uptime_seconds = time.time() - boot_time
-        return uptime_seconds
+        pass
+        # boot_time = psutil.boot_time()   # seconds since epoch
+        # uptime_seconds = time.time() - boot_time
+        # return uptime_seconds
 
     # ---------- Utility Debug ----------
     def dump_system_info(self):
