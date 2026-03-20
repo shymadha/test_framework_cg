@@ -5,9 +5,9 @@
       "interfaces": [
         {
           "type": "ssh",
-          "host": "10.203.238.6",
-          "username": "shyamala",
-          "password": "shy1234"
+          "host": "192.168.7.2",
+          "username": "debian",
+          "password": "temppwd1"
         },
         {
           "type": "local"
