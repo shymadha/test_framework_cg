@@ -5,9 +5,9 @@
       "interfaces": [
         {
           "type": "ssh",
-          "host": "10.204.209.63",
-          "username": "capge",
-          "password": "a1b2c3d4e5"
+          "host": "10.203.238.6",
+          "username": "shyamala",
+          "password": "shy1234"
         },
         {
           "type": "local"
