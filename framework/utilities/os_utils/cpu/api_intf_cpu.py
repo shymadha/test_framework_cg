@@ -25,3 +25,15 @@ class CpuUtilsAPI():
 
     def get_core_count(self):
         return self.__cpu_utils_obj.get_cpu_count()
+    
+    def monitor_cpu_usage(self):
+        return self.__cpu_utils_obj.monitor_cpu_usage()
+
+    def test_cpu_stress(self, timeout="60s"):
+        return self.__cpu_utils_obj.test_cpu_stress(timeout)
+
+    def check_cpu_frequency(self):
+        return self.__cpu_utils_obj.check_cpu_frequency()
+
+    def get_cpu_vendor(self):
+        return self.__cpu_utils_obj.get_cpu_vendor()

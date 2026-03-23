@@ -15,7 +15,7 @@ import argparse
 from framework.core.test_engine import TestEngine
 from framework.core.user_input_parser import ParseUserInput
 from tests.base_test import BaseTest
-from framework.utils.cpu_utils import CpuUtil
+from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
 
 class CpuDetectionTest(BaseTest):
     def do_test(self):

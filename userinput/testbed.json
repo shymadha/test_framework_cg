@@ -5,9 +5,9 @@
       "interfaces": [
         {
           "type": "ssh",
-          "host": "192.168.7.2",
-          "username": "debian",
-          "password": "temppwd1"
+          "host": "10.204.209.63",
+          "username": "capge",
+          "password": "a1b2c3d4e5"
         },
         {
           "type": "local"
@@ -22,6 +22,15 @@
     },
     "CpuCoreCountTest": {
       "min_cores": 1
+    },
+    "CpuMonitorUsageTest": {
+      "monitoring_tool": "htop"
+    },
+    "CpuStressTest": {
+      "timeout": "10s"
+    },
+    "CpuFrequencyTest": {
+      "threads": 1
     }
   }
 }
