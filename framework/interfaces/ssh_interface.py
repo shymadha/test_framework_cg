@@ -1,8 +1,9 @@
 import sys
 import os
+import paramiko
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import paramiko
+#import paramiko
 import socket
 from interfaces.base_interface import TestInterface
 from core.logger import setup_logger
