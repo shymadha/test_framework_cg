@@ -11,6 +11,7 @@ for parent in current.parents:
 
 from framework.tests.base_test import BaseTest
 from framework.utilities.os_utils.ethernet.api_intf_ethernet import EthernetUtilsAPI
+from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
 
 class EthernetConnectivityTest(BaseTest):
     def pre_test(self):
@@ -19,9 +20,8 @@ class EthernetConnectivityTest(BaseTest):
 
     def do_test(self):
         self.logger.info("Running Ethernet Connectivity Test")
-        eth_obj = EthernetUtilsAPI(self.platform_obj.get_os_type(), self.platform_obj)
-        output, error, exit_status = eth_obj.test_connectivity()
-
+        ethernet_obj = OSBaseAPI(self.platform_obj)
+        output,error,exit_status = ethernet_obj.ethernet.test_connectivity()
         self.logger.info(f"Connectivity Test Output: {output}")
 
         # Success scenario

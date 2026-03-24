@@ -11,6 +11,7 @@ for parent in current.parents:
 
 from framework.tests.base_test import BaseTest
 from framework.utilities.os_utils.ethernet.api_intf_ethernet import EthernetUtilsAPI
+from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
 
 class EthernetDeviceDetectionTest(BaseTest):
     def pre_test(self):
@@ -19,9 +20,8 @@ class EthernetDeviceDetectionTest(BaseTest):
 
     def do_test(self):
         self.logger.info("Running Ethernet Device Detection Test")
-        eth_obj = EthernetUtilsAPI(self.platform_obj.get_os_type(), self.platform_obj)
-        output, error, exit_status = eth_obj.detect_device()
-
+        ethernet_obj = OSBaseAPI(self.platform_obj)
+        output,error,exit_status = ethernet_obj.ethernet.detect_device()
         self.logger.info(f"Device Detection Output: {output}")
 
         # Success scenario

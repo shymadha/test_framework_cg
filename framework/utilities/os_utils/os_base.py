@@ -18,6 +18,7 @@ class OSBase:
 
         # System API Interfaces (CPU, Disk, other modules)
         self.cpu = None
+        self.ethernet= None
         self.disk = None
         
         
