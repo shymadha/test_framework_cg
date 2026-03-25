@@ -1,0 +1,18 @@
+2026-03-25 12:02:24 | INFO | TestEngine | Pre-test phase
+2026-03-25 12:02:25 | INFO | SSHInterface | [CONNECTED] 192.168.7.2
+2026-03-25 12:02:25 | INFO | LocalTestInterface | Local interface ready
+2026-03-25 12:02:28 | INFO | BeaglePlatform | Detected OS: linux
+2026-03-25 12:02:28 | INFO | EthernetDeviceDetectionTest | Executing pre-test for EthernetDeviceDetectionTest
+2026-03-25 12:02:28 | INFO | EthernetDeviceDetectionTest | Running Ethernet Device Detection Test
+2026-03-25 12:02:29 | INFO | EthernetDeviceDetectionTest | Device Detection Output: 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: dummy0: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether fe:19:58:44:17:26 brd ff:ff:ff:ff:ff:ff
+3: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether 24:76:25:f5:9c:e5 brd ff:ff:ff:ff:ff:ff
+    altname end0
+    altname enx247625f59ce5
+4: usb0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether 24:76:25:f5:9c:e8 brd ff:ff:ff:ff:ff:ff
+2026-03-25 12:02:29 | INFO | EthernetDeviceDetectionTest | EthernetDeviceDetectionTest: PASS
+2026-03-25 12:02:29 | INFO | SSHInterface | [DISCONNECTED] 192.168.7.2

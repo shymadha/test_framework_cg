@@ -1,0 +1,25 @@
+2026-03-25 13:51:48 | INFO | TestEngine | Pre-test phase
+2026-03-25 13:51:48 | INFO | SSHInterface | [CONNECTED] 192.168.7.2
+2026-03-25 13:51:48 | INFO | LocalTestInterface | Local interface ready
+2026-03-25 13:51:52 | INFO | BeaglePlatform | Detected OS: linux
+2026-03-25 13:51:52 | INFO | EthernetConnectivityTest | Executing pre-test for EthernetConnectivityTest
+2026-03-25 13:51:52 | INFO | EthernetConnectivityTest | Running Ethernet Connectivity Test
+2026-03-25 13:51:55 | INFO | EthernetConnectivityTest | Connectivity Test Output: traceroute to google.com (142.250.195.14), 30 hops max, 60 byte packets
+ 1  _gateway (10.204.208.1)  1.859 ms  1.681 ms  1.543 ms
+ 2  * * *
+ 3  123.242.255.252 (123.242.255.252)  1.026 ms  0.898 ms  0.842 ms
+ 4  * * *
+ 5  * * *
+ 6  * 172.31.167.54 (172.31.167.54)  8.792 ms *
+ 7  14.141.123.226.static-Chennai.vsnl.net.in (14.141.123.226)  9.003 ms  14.161 ms  8.803 ms
+ 8  * * 172.25.138.2 (172.25.138.2)  9.144 ms
+ 9  115.112.15.74.static-chennai.vsnl.net.in (115.112.15.74)  8.825 ms  8.743 ms  8.874 ms
+10  142.251.231.1 (142.251.231.1)  10.380 ms 142.251.66.197 (142.251.66.197)  8.192 ms 142.251.231.1 (142.251.231.1)  10.152 ms
+11  142.251.230.70 (142.251.230.70)  10.071 ms 142.250.208.230 (142.250.208.230)  42.801 ms 142.250.63.172 (142.250.63.172)  10.097 ms
+12  * * *
+13  192.178.254.210 (192.178.254.210)  22.756 ms 192.178.254.240 (192.178.254.240)  24.477 ms 192.178.254.212 (192.178.254.212)  26.212 ms
+14  192.178.110.109 (192.178.110.109)  24.268 ms 192.178.110.111 (192.178.110.111)  23.732 ms 192.178.110.109 (192.178.110.109)  23.126 ms
+15  209.85.248.61 (209.85.248.61)  26.420 ms 209.85.250.139 (209.85.250.139)  25.414 ms  22.909 ms
+16  lcboma-at-in-f14.1e100.net (142.250.195.14)  23.225 ms  23.226 ms  22.925 ms
+2026-03-25 13:51:55 | INFO | EthernetConnectivityTest | EthernetConnectivityTest: PASS
+2026-03-25 13:51:55 | INFO | SSHInterface | [DISCONNECTED] 192.168.7.2

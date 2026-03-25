@@ -1,0 +1,25 @@
+2026-03-25 12:45:32 | INFO | TestEngine | Pre-test phase
+2026-03-25 12:45:32 | INFO | SSHInterface | [CONNECTED] 192.168.7.2
+2026-03-25 12:45:32 | INFO | LocalTestInterface | Local interface ready
+2026-03-25 12:45:36 | INFO | BeaglePlatform | Detected OS: linux
+2026-03-25 12:45:36 | INFO | EthernetConnectivityTest | Executing pre-test for EthernetConnectivityTest
+2026-03-25 12:45:36 | INFO | EthernetConnectivityTest | Running Ethernet Connectivity Test
+2026-03-25 12:45:40 | INFO | EthernetConnectivityTest | Connectivity Test Output: traceroute to google.com (142.250.195.14), 30 hops max, 60 byte packets
+ 1  _gateway (10.204.208.1)  0.358 ms  0.263 ms  0.260 ms
+ 2  * * *
+ 3  123.242.255.252 (123.242.255.252)  1.003 ms  1.067 ms  0.866 ms
+ 4  mail.tataidc.com (14.195.89.253)  2.769 ms  2.843 ms  2.840 ms
+ 5  * 115.111.221.61.static-banglore.vsnl.net.in (115.111.221.61)  3.810 ms *
+ 6  172.31.167.54 (172.31.167.54)  8.986 ms *  9.577 ms
+ 7  14.141.123.226.static-Chennai.vsnl.net.in (14.141.123.226)  9.304 ms  9.434 ms  9.125 ms
+ 8  172.25.138.2 (172.25.138.2)  9.218 ms *  9.375 ms
+ 9  115.112.15.74.static-chennai.vsnl.net.in (115.112.15.74)  9.434 ms  10.160 ms  9.831 ms
+10  142.250.214.83 (142.250.214.83)  9.799 ms 142.251.231.1 (142.251.231.1)  11.963 ms 142.250.214.83 (142.250.214.83)  9.631 ms
+11  142.250.63.172 (142.250.63.172)  10.038 ms 142.251.229.250 (142.251.229.250)  10.183 ms 142.251.230.52 (142.251.230.52)  10.232 ms
+12  * * 172.253.64.227 (172.253.64.227)  30.088 ms
+13  192.178.254.228 (192.178.254.228)  24.605 ms 192.178.254.220 (192.178.254.220)  25.768 ms 172.253.70.180 (172.253.70.180)  24.542 ms
+14  192.178.110.109 (192.178.110.109)  25.645 ms 192.178.110.107 (192.178.110.107)  23.058 ms 192.178.110.105 (192.178.110.105)  25.314 ms
+15  209.85.250.139 (209.85.250.139)  23.559 ms  24.533 ms 209.85.248.61 (209.85.248.61)  24.090 ms
+16  del12s09-in-f14.1e100.net (142.250.195.14)  23.118 ms  29.264 ms  23.607 ms
+2026-03-25 12:45:40 | INFO | EthernetConnectivityTest | EthernetConnectivityTest: PASS
+2026-03-25 12:45:40 | INFO | SSHInterface | [DISCONNECTED] 192.168.7.2

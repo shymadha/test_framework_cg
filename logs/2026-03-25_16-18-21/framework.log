@@ -1,0 +1,2 @@
+2026-03-25 16:18:21 | INFO | TestEngine | Pre-test phase
+2026-03-25 16:18:31 | ERROR | SSHInterface | SSH Connection failed: timed out

@@ -1,0 +1,9 @@
+2026-03-25 12:03:04 | INFO | TestEngine | Pre-test phase
+2026-03-25 12:03:05 | INFO | SSHInterface | [CONNECTED] 192.168.7.2
+2026-03-25 12:03:05 | INFO | LocalTestInterface | Local interface ready
+2026-03-25 12:03:08 | INFO | BeaglePlatform | Detected OS: linux
+2026-03-25 12:03:08 | INFO | EthernetLinkStatusTest | Executing pre-test for EthernetLinkStatusTest
+2026-03-25 12:03:08 | INFO | EthernetLinkStatusTest | Running Ethernet Link Status Test
+2026-03-25 12:03:08 | INFO | EthernetLinkStatusTest | Link Status Output: up
+2026-03-25 12:03:08 | INFO | EthernetLinkStatusTest | EthernetLinkStatusTest: PASS
+2026-03-25 12:03:08 | INFO | SSHInterface | [DISCONNECTED] 192.168.7.2

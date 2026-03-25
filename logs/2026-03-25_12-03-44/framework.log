@@ -1,0 +1,25 @@
+2026-03-25 12:03:44 | INFO | TestEngine | Pre-test phase
+2026-03-25 12:03:45 | INFO | SSHInterface | [CONNECTED] 192.168.7.2
+2026-03-25 12:03:45 | INFO | LocalTestInterface | Local interface ready
+2026-03-25 12:03:48 | INFO | BeaglePlatform | Detected OS: linux
+2026-03-25 12:03:48 | INFO | EthernetConnectivityTest | Executing pre-test for EthernetConnectivityTest
+2026-03-25 12:03:48 | INFO | EthernetConnectivityTest | Running Ethernet Connectivity Test
+2026-03-25 12:03:52 | INFO | EthernetConnectivityTest | Connectivity Test Output: traceroute to google.com (142.251.220.46), 30 hops max, 60 byte packets
+ 1  _gateway (10.204.208.1)  0.529 ms  0.370 ms  0.275 ms
+ 2  * * *
+ 3  123.242.255.252 (123.242.255.252)  1.014 ms  0.929 ms  0.902 ms
+ 4  mail.tataidc.com (14.195.89.253)  2.612 ms  2.707 ms  2.615 ms
+ 5  115.111.221.61.static-banglore.vsnl.net.in (115.111.221.61)  3.729 ms *  3.750 ms
+ 6  172.31.167.54 (172.31.167.54)  9.334 ms  9.524 ms  9.007 ms
+ 7  14.141.123.226.static-Chennai.vsnl.net.in (14.141.123.226)  14.471 ms  9.184 ms  9.102 ms
+ 8  * * 172.25.138.2 (172.25.138.2)  9.312 ms
+ 9  115.112.15.74.static-chennai.vsnl.net.in (115.112.15.74)  10.103 ms  9.651 ms  9.540 ms
+10  142.251.231.1 (142.251.231.1)  11.932 ms  11.749 ms  10.825 ms
+11  142.251.50.58 (142.251.50.58)  8.898 ms 172.253.71.2 (172.253.71.2)  11.533 ms 142.250.63.172 (142.250.63.172)  18.592 ms
+12  216.239.49.109 (216.239.49.109)  23.937 ms * *
+13  192.178.254.212 (192.178.254.212)  23.872 ms 192.178.254.236 (192.178.254.236)  27.064 ms 142.250.212.86 (142.250.212.86)  23.508 ms
+14  142.251.77.69 (142.251.77.69)  26.157 ms 142.250.209.71 (142.250.209.71)  26.758 ms 192.178.110.249 (192.178.110.249)  27.725 ms
+15  142.251.70.57 (142.251.70.57)  24.414 ms  23.000 ms  23.567 ms
+16  hkg07s50-in-f14.1e100.net (142.251.220.46)  24.960 ms  23.117 ms  23.529 ms
+2026-03-25 12:03:52 | INFO | EthernetConnectivityTest | EthernetConnectivityTest: PASS
+2026-03-25 12:03:52 | INFO | SSHInterface | [DISCONNECTED] 192.168.7.2
