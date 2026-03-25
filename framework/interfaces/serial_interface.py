@@ -12,13 +12,34 @@ class SerialInterface(TestInterface):
         self.baudrate = config.get("baudrate", 9600)
         self.conn = None
 
+    
     def connect(self):
-        self.conn = serial.Serial(self.port, self.baudrate)
+        try:
+            self.conn = serial.Serial(self.port, self.baudrate)
+            self.logger.info(f"Serial connected on {self.port} @ {self.baudrate}")
+        except Exception as e:
+            self.logger.exception(f"Failed to open serial port {self.port}: {e}")
+            raise   # rethrow so higher-level logic knows it failed
 
     def execute(self, command):
-        self.conn.write(command.encode() + b"\n")
-        return self.conn.readline().decode(), ""
+        try:
+            if not self.conn:
+                raise Exception("Serial connection not established")
+            # Write command
+            self.conn.write(command.encode() + b"\n")
+            # Read response
+            response = self.conn.readline().decode().strip()
+            return response, ""
+
+        except Exception as e:
+            self.logger.exception(f"Error executing command '{command}': {e}")
+            raise   # propagate upward
 
     def close(self):
-        if self.conn:
-            self.conn.close()
+        try:
+            if self.conn:
+                self.conn.close()
+                self.logger.info("Serial connection closed")
+        except Exception as e:
+            self.logger.exception(f"Error while closing serial port: {e}")
+

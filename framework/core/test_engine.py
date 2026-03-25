@@ -20,14 +20,32 @@ class TestEngine:
         self.platform_obj.detect_os()
         
     def run(self):
-        self.pre_test()
-        status = self.do_test()
-        status = self.post_test()
-        return sys.exit(status)      
+        try:
+            self.pre_test()
+            status = self.do_test()
+            status = self.post_test()
+            return sys.exit(status) 
+        except Exception as e:
+            # Log full stacktrace
+            self.test_engine_logger.exception(f"ERROR in TestEngine: {e}")
+
+            # Cleanup if platform_obj initialized
+            if self.platform_obj:
+                try:
+                    self.platform_obj.close()
+                except Exception as close_err:
+                    self.test_engine_logger.error(f"Failed to close platform: {close_err}")
+            return sys.exit(1)  # failure
+     
 
     def post_test(self):
         verdict = "PASS" if self.result.passed else "FAIL"
         self.logger.info(f"{self.__class__.__name__}: {verdict}")
-        self.platform_obj.close()
+        if self.platform_obj:
+            self.platform_obj.close()
+        
+        
+        
+
         
     

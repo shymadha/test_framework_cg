@@ -49,18 +49,23 @@ class SSHInterface(TestInterface):
             raise Exception(f"SSH Connection failed: {e}")
 
     def execute(self, command):
-        if not self.client:
-            self.logger.error(f"SSH Connection failed: {e}")
-            raise Exception("SSH client not connected.")
+        try:
+            if not self.client:
+                self.logger.error(f"SSH Connection failed: {e}")
+                raise Exception("SSH client not connected.")
 
-        stdin, stdout, stderr = self.client.exec_command(command)
-        exit_status = stdout.channel.recv_exit_status()
+            stdin, stdout, stderr = self.client.exec_command(command)
+            exit_status = stdout.channel.recv_exit_status()
 
-        return (
-            stdout.read().decode().strip(),
-            stderr.read().decode().strip(),
-            exit_status,
-        )
+            return (
+                stdout.read().decode().strip(),
+                stderr.read().decode().strip(),
+                exit_status,
+            )
+        except Exception as e:
+            self.logger.exception(f"Error executing command '{command}': {e}")
+            raise  Exception(f"Error executing command '{command}': {e}") # Re-raise so calling code can handle it
+
 
     def close(self):
         if self.client:

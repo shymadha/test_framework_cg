@@ -10,60 +10,102 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from platforms.platform_factory import PlatformFactory
 from interfaces.interface_factory import InterfaceFactory
+from core.logger import setup_logger
 
 class ParseUserInput:
     def __init__(self):
-        self.args = self._parse_arguments()
-        self.user_input = self.parse_user_input(self.args.config)
+        self.logger = setup_logger("ParseUserInput")
+        try:
+            self.args = self._parse_arguments()
+            self.user_input = self.parse_user_input(self.args.config)
+        except Exception as e:
+            self.logger.exception(f"Failed during initialization: {e}")
+            raise 
+
    
     def parse_user_input(self, config_file):
-        with open(config_file) as f:
-            self.user_input = json.load(f)
-        return self.user_input
+        try:
+            with open(config_file) as f:
+                self.user_input = json.load(f)
+            return self.user_input
+        except FileNotFoundError:
+            self.logger.exception(f"Config file not found: {config_file}")
+            raise
+        except json.JSONDecodeError as e:
+            self.logger.exception(f"Invalid JSON in config file {config_file}: {e}")
+            raise
+        except Exception as e:
+            self.logger.exception(f"Error reading config file: {e}")
+            raise
+
 
     def __create_platform_obj(self):
-        platform_name = self.user_input.get("SUT", [{}])[0].get("platform", None)
-        platform_obj = PlatformFactory.create_platform(platform_name)
-        return platform_obj
+        try:
+            platform_name = self.user_input.get("SUT", [{}])[0].get("platform", None)
+            platform_obj = PlatformFactory.create_platform(platform_name)
+            return platform_obj
+        except Exception as e:
+            self.logger.exception(f"Failed to create platform object: {e}")
+            raise
+
         
     def create_dev_obj(self):
-        self.platform_obj = self.__create_platform_obj()
-        interfaces = self.user_input.get("SUT", [{}])[0].get("interfaces", [])
+        try:
+            self.platform_obj = self.__create_platform_obj()
+            interfaces = self.user_input.get("SUT", [{}])[0].get("interfaces", [])
 
-        for intf_cfg in interfaces:
-            intf_type = intf_cfg.get("type")
-            interface_obj = InterfaceFactory.create_test_intf(intf_cfg)
-            self.platform_obj.add_test_interface(interface_obj, intf_cfg.get("type"))
-        self.platform_obj.connect_test_interface()
+            for intf_cfg in interfaces:
+                try:
+                    intf_type = intf_cfg.get("type")
+                    interface_obj = InterfaceFactory.create_test_intf(intf_cfg)
+                    self.platform_obj.add_test_interface(interface_obj, intf_cfg.get("type"))
+                except Exception as e:
+                        self.logger.exception(f"Failed to create interface {intf_cfg}: {e}")
+                        raise
+
+            self.platform_obj.connect_test_interface()
+        except Exception as e:
+            self.logger.exception(f"Error creating device objects: {e}")
+            raise
+
     
     def _parse_arguments(self):
-        parser = argparse.ArgumentParser(
-            description="Test Runner CLI"
-        )
+        try:
+            parser = argparse.ArgumentParser(
+                description="Test Runner CLI"
+            )
 
-        parser.add_argument(
-            "--config",
-            required=True,
-            help="Path to configuration JSON file"
-        )
+            parser.add_argument(
+                "--config",
+                required=True,
+                help="Path to configuration JSON file"
+            )
 
-        return parser.parse_args()
+            return parser.parse_args()
+        except Exception as e:
+            self.logger.exception(f"Argument parsing failed: {e}")
+            raise
 
     def get_platform_obj(self):
         return self.platform_obj
     
     
     def parse_int_output(self,output):
-        if isinstance(output, int):
-            return output
+        try:
+            if isinstance(output, int):
+                return output
 
-        if not isinstance(output, str):
-            raise ValueError(f"Unexpected type: {type(output)}")
+            if not isinstance(output, str):
+                raise ValueError(f"Unexpected type: {type(output)}")
 
-        # Extract only the numbers from the string
-        match = re.search(r'\d+', output)
-        if not match:
-            raise ValueError(f"No integer found in output: {output!r}")
+            # Extract only the numbers from the string
+            match = re.search(r'\d+', output)
+            if not match:
+                raise ValueError(f"No integer found in output: {output!r}")
 
-        return int(match.group())
+            return int(match.group())
+        except Exception as e:
+            self.logger.exception(f"Error parsing integer output '{output}': {e}")
+            raise
+
    
