@@ -40,7 +40,7 @@ class EthernetWindows(EthernetBase):
 
     def test_connectivity(self):
         try:
-            cmd = "tracert google.com"
+            cmd = "tracert -h 5 -w 1000 google.com"
             output, error, exit_status = self.platform_obj.exec_cmd(cmd, "ssh")
             if exit_status != 0:
                 self.platform_obj.logger.error(f"Connectivity test failed: {error}")
