@@ -1,10 +1,20 @@
-import os
 import sys
+import os
+from pathlib import Path
+
+# Ensure project root is on sys.path (same as CPU tests)
+current = Path(__file__).resolve()
+
+for parent in current.parents:
+    if (parent / "framework").exists():
+        sys.path.insert(0, str(parent))
+        break
+
+import argparse
 import importlib
 import json
 import socket
 import gradio as gr
-from pathlib import Path
 import io
 import contextlib
 import traceback
@@ -13,11 +23,31 @@ import inspect
 import time
 from datetime import datetime
 
+
 # ---------------------------
 # Utility: pick a free port
 # ---------------------------
 def find_free_port(start_port=7862, max_port=7900):
-    """Find the first available TCP port in the given range."""
+    """
+    Find and return the first available TCP port within the specified range.
+
+    Parameters
+    ----------
+    start_port : int, optional
+        Starting port number to scan. Defaults to 7862.
+    max_port : int, optional
+        Maximum port number to check. Defaults to 7900.
+
+    Returns
+    -------
+    int
+        The first free TCP port in the provided range.
+
+    Raises
+    ------
+    OSError
+        If no ports are available within the specified range.
+    """
     for port in range(start_port, max_port + 1):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             try:
@@ -27,56 +57,55 @@ def find_free_port(start_port=7862, max_port=7900):
                 continue
     raise OSError(f"No free port found in range {start_port}-{max_port}")
 
-# ---------------------------
-# Project structure / sys.path
-# ---------------------------
-# Assuming this file is at: <repo_root>/framework/ui/ui Copy.py
-project_root = Path(__file__).resolve().parents[2]
-if str(project_root) not in sys.path:
-    sys.path.insert(0, str(project_root))
-
-# Also add 'framework' folder to sys.path to support internal relative-like imports 
-# (e.g. 'from tests.base_test' or 'from core.testbed_utils')
-framework_dir = project_root / "framework"
-if str(framework_dir) not in sys.path:
-    sys.path.insert(0, str(framework_dir))
-
-# Optional import (kept, in case your framework relies on it elsewhere)
-try:
-    from framework.core.testbed_utils import TestbedUtils  # noqa: F401
-except Exception:
-    # Safe to continue if this import isn't strictly required for UI
-    pass
 
 # ---------------------------
-# Discovery
+# Discovery utilities
 # ---------------------------
 def discover_all_test_classes():
     """
-    Discover all test classes under 'framework.tests' using pkgutil for reliability.
+    Discover all test classes defined under `framework.tests`.
+
+    Uses `pkgutil.walk_packages` to recursively scan test modules.
+    A class is considered a test class if:
+      - Its name ends with 'Test'
+      - It is not 'BaseTest'
+      - It belongs to its module (no imported classes)
+
+    Returns
+    -------
+    tuple
+        (tests, skipped) where:
+          - tests is a list of dictionaries containing:
+                {"module", "class", "id"}
+          - skipped is a list of modules that failed import with reasons
     """
     base_pkg_name = "framework.tests"
     tests = []
     skipped = []
-    
+
     try:
-        # In case it's not in sys.modules yet
         if base_pkg_name not in sys.modules:
             try:
                 base_pkg = importlib.import_module(base_pkg_name)
             except ImportError:
-                # Fallback to absolute path discovery if import fails
                 return _discover_fallback()
         else:
             base_pkg = sys.modules[base_pkg_name]
-        
-        for finder, mod_name, ispkg in pkgutil.walk_packages(base_pkg.__path__, base_pkg.__name__ + "."):
+
+        for finder, mod_name, ispkg in pkgutil.walk_packages(
+            base_pkg.__path__, base_pkg.__name__ + "."
+        ):
             if mod_name.endswith(".base_test"):
                 continue
+
             try:
                 m = importlib.import_module(mod_name)
                 for cname, obj in inspect.getmembers(m, inspect.isclass):
-                    if obj.__module__ == m.__name__ and cname.endswith("Test") and cname != "BaseTest":
+                    if (
+                        obj.__module__ == m.__name__
+                        and cname.endswith("Test")
+                        and cname != "BaseTest"
+                    ):
                         tests.append({
                             "module": mod_name,
                             "class": cname,
@@ -84,24 +113,43 @@ def discover_all_test_classes():
                         })
             except Exception as e:
                 skipped.append((mod_name, str(e)))
+
     except Exception as e:
         skipped.append(("framework.tests", str(e)))
 
     tests.sort(key=lambda x: x["id"])
     return tests, skipped
 
+
 def _discover_fallback():
-    """Fallback discovery if pkgutil fails due to path issues."""
-    tests_dir = project_root / "framework" / "tests"
+    """
+    Fallback discovery method used when pkgutil import resolution fails.
+
+    The fallback manually walks the `framework/tests` directory, attempting to
+    import modules directly from filesystem paths.
+
+    Returns
+    -------
+    tuple
+        (tests, skipped) similar to discover_all_test_classes().
+    """
+    tests_dir = "project_root" / "framework" / "tests"
     tests = []
     skipped = []
+
     if not tests_dir.exists():
-        return [], [("framework.tests", f"Directory not found context: {tests_dir}")]
+        return [], [("framework.tests", f"Directory not found: {tests_dir}")]
+
     for root, _, files in os.walk(tests_dir):
         for f in files:
             if f.endswith(".py") and not f.startswith("__") and f != "base_test.py":
                 rel = os.path.relpath(root, tests_dir)
-                mod = f"framework.tests.{rel.replace(os.sep, '.')}.{f[:-3]}" if rel != "." else f"framework.tests.{f[:-3]}"
+                mod = (
+                    f"framework.tests.{rel.replace(os.sep, '.')}.{f[:-3]}"
+                    if rel != "."
+                    else f"framework.tests.{f[:-3]}"
+                )
+
                 try:
                     m = importlib.import_module(mod)
                     for cname, obj in inspect.getmembers(m, inspect.isclass):
@@ -109,10 +157,25 @@ def _discover_fallback():
                             tests.append({"module": mod, "class": cname, "id": f"{mod}:{cname}"})
                 except Exception as e:
                     skipped.append((mod, str(e)))
+
     tests.sort(key=lambda x: x["id"])
     return tests, skipped
 
+
 def load_json_content(file_obj):
+    """
+    Load and return JSON content from an uploaded testbed file.
+
+    Parameters
+    ----------
+    file_obj : gradio.File
+        Uploaded JSON file object.
+
+    Returns
+    -------
+    dict
+        Parsed JSON content, or {"error": "..."} if parsing fails.
+    """
     if file_obj is None:
         return {}
     try:
@@ -121,22 +184,50 @@ def load_json_content(file_obj):
     except Exception as e:
         return {"error": str(e)}
 
+
 # ---------------------------
-# Execution
+# Execution utilities
 # ---------------------------
 def _run_single_test(config_file, module_path, class_name):
     """
-    Run a single test class and return a rich string report.
+    Execute a single test class instance and return a formatted string report.
+
+    This function:
+      - Temporarily overrides sys.argv so ParseUserInput can locate the config
+      - Imports and reloads the test module
+      - Instantiates and runs the test class
+      - Captures stdout/stderr
+      - Builds a detailed execution report block
+
+    Parameters
+    ----------
+    config_file : gradio.File
+        The uploaded testbed JSON file.
+    module_path : str
+        Full import path of the test module.
+    class_name : str
+        Name of the test class inside the module.
+
+    Returns
+    -------
+    str
+        A formatted multi-line report containing:
+        - Status
+        - Output logs
+        - Message
+        - Timestamps
+        - Duration
+        - Optional extra metadata
     """
     original_argv = sys.argv
     buf = io.StringIO()
 
-    # Prepare argv for ParseUserInput to find the config, if your framework needs it
     sys.argv = [sys.executable, "--config", config_file.name]
 
     start_ts = time.time()
+
     with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
-        # Clear all existing logging handlers so they recreate with our redirected stdout/stderr
+        # Reset loggers
         import logging
         logging.getLogger().handlers.clear()
         for name in logging.root.manager.loggerDict:
@@ -147,31 +238,36 @@ def _run_single_test(config_file, module_path, class_name):
             importlib.reload(test_module)
 
             test_class = getattr(test_module, class_name, None)
-            if test_class is None or not inspect.isclass(test_class):
-                raise RuntimeError(f"Could not find class '{class_name}' in module '{module_path}'")
+            if test_class is None:
+                raise RuntimeError(
+                    f"Could not find class '{class_name}' in module '{module_path}'"
+                )
 
             test_instance = test_class()
-
-            # Run the test
             test_instance.run()
 
-            # Try to extract result fields robustly
             result_obj = getattr(test_instance, "result", None)
+
             passed = getattr(result_obj, "passed", None)
             message = getattr(result_obj, "message", "")
             duration = getattr(result_obj, "duration", None)
+
             extra_fields = []
-            # If your Result has other useful fields, include them safely
             for name in ("details", "data", "errors", "warnings"):
                 if hasattr(result_obj, name):
                     extra_fields.append((name, getattr(result_obj, name)))
 
-            status = "PASS" if passed else "FAIL" if passed is not None else "UNKNOWN"
+            status = (
+                "PASS" if passed else
+                "FAIL" if passed is not None else
+                "UNKNOWN"
+            )
 
         except Exception as e:
             status = "EXCEPTION"
             message = f"{e}\n\n{traceback.format_exc()}"
             extra_fields = []
+
         finally:
             sys.argv = original_argv
 
@@ -179,7 +275,6 @@ def _run_single_test(config_file, module_path, class_name):
     captured_output = buf.getvalue()
     buf.close()
 
-    # Build a rich, readable block
     lines = []
     lines.append("=" * 100)
     lines.append(f"TEST: {module_path}:{class_name}")
@@ -200,14 +295,29 @@ def _run_single_test(config_file, module_path, class_name):
     lines.append("--- EXECUTION LOGS (stdout & stderr) ---")
     lines.append(captured_output.strip() if captured_output.strip() else "(no logs)")
     lines.append("=" * 100)
-    lines.append("")  # blank line
+    lines.append("")
     return "\n".join(lines)
+
 
 def execute_tests(config_file, selected_tests_ids):
     """
-    Run one, many, or all tests based on 'selected_tests_ids' (list of "<module>:<ClassName>").
-    If user didn't select anything, we run ALL discovered tests.
-    Returns a big string report.
+    Execute one or more tests and return a consolidated report.
+
+    Parameters
+    ----------
+    config_file : gradio.File
+        Uploaded testbed.json file.
+    selected_tests_ids : list of str
+        List of test identifiers ("module:ClassName").
+        If empty, all discovered tests are executed.
+
+    Returns
+    -------
+    str
+        A full execution report containing:
+          - Discovery results
+          - Execution blocks for each test
+          - Summary metadata
     """
     if not config_file:
         return "Error: Please upload a testbed.json file first."
@@ -215,7 +325,6 @@ def execute_tests(config_file, selected_tests_ids):
     discovered, skipped = discover_all_test_classes()
     id_to_item = {t["id"]: t for t in discovered}
 
-    # If none selected, run all
     if not selected_tests_ids:
         selected = discovered
         header = f"Running ALL discovered tests ({len(discovered)})."
@@ -229,11 +338,15 @@ def execute_tests(config_file, selected_tests_ids):
                 missing.append(tid)
         header = f"Running {len(selected)} selected tests."
         if missing:
-            header += f"\nWARNING: {len(missing)} tests were not found and will be skipped:\n  - " + "\n  - ".join(missing)
+            header += (
+                "\nWARNING: The following tests were not found:\n  - "
+                + "\n  - ".join(missing)
+            )
 
     report_lines = []
     report_lines.append("# Test Execution Report")
     report_lines.append(header)
+
     if skipped:
         report_lines.append("")
         report_lines.append("## Skipped Modules During Discovery")
@@ -242,33 +355,33 @@ def execute_tests(config_file, selected_tests_ids):
 
     report_lines.append("")
     report_lines.append("## Results")
+
     for item in selected:
         mod = item["module"]
         cls = item["class"]
         one_report = _run_single_test(config_file, mod, cls)
         report_lines.append(one_report)
 
-    # Summary
-    summary_pass = 0
-    summary_fail = 0
-    summary_unknown = 0
-    # Very light post-parse for summary:
-    for block in report_lines:
-        if isinstance(block, str) and block.startswith("=" * 100):
-            # next lines include STATUS
-            pass  # we already have rich blocks; optional to parse again
-
     return "\n".join(report_lines)
 
+
 # ---------------------------
-# UI
+# UI Setup
 # ---------------------------
 def refresh_test_choices():
     """
-    Returns (choices, info_md)
+    Refresh and return the list of discovered test choices for the UI.
+
+    Returns
+    -------
+    tuple
+        (choices, markdown_info) where:
+          - choices is a list of test IDs for selection
+          - markdown_info is a human-readable summary string
     """
     discovered, skipped = discover_all_test_classes()
     choices = [t["id"] for t in discovered]
+
     info_lines = []
     info_lines.append(f"Discovered {len(discovered)} test classes under 'framework.tests'.")
     if skipped:
@@ -278,75 +391,6 @@ def refresh_test_choices():
             info_lines.append(f"- {mod}: {reason}")
         if len(skipped) > 10:
             info_lines.append(f"... and {len(skipped) - 10} more")
+
     info_md = "\n".join(info_lines)
     return choices, info_md
-
-with gr.Blocks(title="Test Framework UI") as demo:
-    gr.Markdown("# 🚀 Test Automation Framework UI")
-    gr.Markdown("Upload your testbed configuration, select one or more tests, and run them. The full logs will be shown.")
-
-    with gr.Row():
-        with gr.Column(scale=1):
-            config_file = gr.File(label="1. Upload testbed.json", file_types=[".json"])
-            json_display = gr.JSON(label="Testbed Contents")
-
-        with gr.Column(scale=1):
-            initial_choices, initial_md = refresh_test_choices()
-            test_info = gr.Markdown(initial_md)
-            test_selector = gr.CheckboxGroup(
-                choices=initial_choices,
-                label="2. Select Test(s) (leave empty to run ALL)",
-                info="Format: framework.tests.<module>:<ClassName>",
-            )
-            refresh_btn = gr.Button("↻ Refresh Tests")
-            run_button = gr.Button("▶️ Run Selected / All", variant="primary")
-
-    with gr.Row():
-        # Bigger area to show full logs nicely
-        output = gr.Code(label="Test Execution Output (full)", language="shell")
-    with gr.Row():
-        # Simple download – we’ll write text to a temp file
-        download_btn = gr.File(label="Download Latest Output", interactive=False)
-
-    # Interactions
-    def _on_config_change(file_obj):
-        return load_json_content(file_obj)
-
-    config_file.change(_on_config_change, inputs=config_file, outputs=json_display)
-
-    def _on_refresh():
-        choices, info_md = refresh_test_choices()
-        return gr.update(choices=choices), gr.update(value=info_md)
-
-    refresh_btn.click(_on_refresh, outputs=[test_selector, test_info])
-
-    def _on_run(config_file_obj, selected_ids):
-        report = execute_tests(config_file_obj, selected_ids)
-        # write to temp file so user can download
-        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        out_path = Path(f"test_report_{ts}.txt")
-        with open(out_path, "w", encoding="utf-8") as f:
-            f.write(report)
-        return report, str(out_path)
-
-    run_button.click(
-        _on_run,
-        inputs=[config_file, test_selector],
-        outputs=[output, download_btn]
-    )
-
-    # Automatically refresh test list when page loads
-    demo.load(_on_refresh, outputs=[test_selector, test_info])
-
-    gr.Markdown("---")
-    gr.Markdown("### Folder Structure Notes")
-    gr.Markdown("""
-- **Tests Location**: `framework/tests/`
-- **UI Location**: `ui/ui.py`
-- **Testbed**: Uploaded via UI (copied to temporary storage by Gradio)
-    """)
-
-if __name__ == "__main__":
-    port = find_free_port()
-    print(f"Starting UI on http://127.0.0.1:{port}")
-    demo.launch(server_name="127.0.0.1", server_port=port, share=False)
