@@ -20,6 +20,7 @@ class OSBase:
         self.cpu = None
         self.ethernet= None
         self.disk = None
+        self.pm= None
         
         
     # ---------- OS Information APIs ----------

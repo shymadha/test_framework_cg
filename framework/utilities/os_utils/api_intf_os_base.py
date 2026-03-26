@@ -5,6 +5,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from framework.utilities.os_utils.cpu.api_intf_cpu import CpuUtilsAPI
 from framework.utilities.os_utils.ethernet.api_intf_ethernet import EthernetUtilsAPI
+from framework.utilities.os_utils.pm.api_intf_pm import PmUtilsAPI
 class OSBaseAPI:
     def __init__(self, platform_obj):
         self.os_name = platform_obj.get_os_type()
@@ -13,5 +14,6 @@ class OSBaseAPI:
         # CPU API object
         self.cpu = CpuUtilsAPI(self.os_name,self.platform_obj)
         self.ethernet=EthernetUtilsAPI(self.os_name,self.platform_obj) 
+        self.pm=PmUtilsAPI(self.os_name,self.platform_obj)
 
         
