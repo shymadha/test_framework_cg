@@ -65,7 +65,7 @@ class PMWindows(PMBase):
         """
         try:
             output, error, exit_status = self.platform_obj.exec_cmd(
-                "s5 /r /t 0", "ssh"
+                "shutdown /r /t 0", "ssh"
             )
 
             if exit_status != 0:
