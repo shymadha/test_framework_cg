@@ -49,7 +49,7 @@ class PMBase(OSBase):
         """
         raise NotImplementedError("Must be implemented in derived classes")
 
-    def s3_sleep(self, password=None, duration=None):
+    def s3(self, password=None, duration=None):
         """
         Place the system into S3 (suspend-to-RAM) sleep mode.
 
@@ -73,14 +73,14 @@ class PMBase(OSBase):
         """
         raise NotImplementedError("Must be implemented in derived classes")
 
-    def shutdown(self):
+    def s5(self):
         """
         Shut down the system gracefully.
 
         Returns
         -------
         tuple
-            (output, error, exit_status) representing the shutdown operation results.
+            (output, error, exit_status) representing the s5 operation results.
 
         Raises
         ------

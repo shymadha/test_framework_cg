@@ -18,12 +18,12 @@ class PMLinux(PMBase):
     environments, including:
       - System restart (reboot)
       - S3 sleep (suspend‑to‑RAM)
-      - System shutdown
+      - System s5
 
     All operations make use of standard Linux commands such as:
       - `reboot`
       - `rtcwake`
-      - `shutdown`
+      - `s5`
 
     Commands requiring elevated privileges use `sudo -S`, with password
     piped in through standard input.
@@ -74,7 +74,7 @@ class PMLinux(PMBase):
             )
             return "", str(e), -1
 
-    def s3_sleep(self, password=None, duration=None):
+    def s3(self, password=None, duration=None):
         """
         Put the system into S3 (suspend‑to‑RAM) sleep mode using `rtcwake`.
 
@@ -122,9 +122,9 @@ class PMLinux(PMBase):
             )
             return "", str(e), -1
 
-    def shutdown(self, password=None):
+    def s5(self, password=None):
         """
-        Shut down the system using Linux `shutdown -h now`.
+        Shut down the system using Linux `s5 -h now`.
 
         Parameters
         ----------
@@ -134,7 +134,7 @@ class PMLinux(PMBase):
         Returns
         -------
         tuple
-            (output, error, exit_status) from the shutdown command.
+            (output, error, exit_status) from the s5 command.
 
         Notes
         -----
@@ -147,14 +147,14 @@ class PMLinux(PMBase):
 
             if exit_status != 0:
                 self.platform_obj.logger.error(
-                    f"Failed to shutdown the system. Error: {error}"
+                    f"Failed to s5 the system. Error: {error}"
                 )
 
             return output, error, exit_status
 
         except Exception as e:
             self.platform_obj.logger.error(
-                f"An error occurred while trying to shutdown the system: {str(e)}",
+                f"An error occurred while trying to s5 the system: {str(e)}",
                 exc_info=True,
             )
             return "", str(e), -1

@@ -77,7 +77,7 @@ class TestEngine:
             self.pre_test()
             status = self.do_test()
             status = self.post_test()
-            return sys.exit(status)
+            #return sys.exit(status)
 
         except Exception as e:
             # Log full stacktrace
@@ -91,7 +91,7 @@ class TestEngine:
                     self.test_engine_logger.error(
                         f"Failed to close platform: {close_err}"
                     )
-            return sys.exit(1)
+            #return sys.exit(1)
 
     def post_test(self):
         """

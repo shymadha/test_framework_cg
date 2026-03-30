@@ -31,6 +31,14 @@
     },
     "EthernetConnectivityTest": {
       "target_host": "google.com"
+    },
+    "SleepTest": {
+      "sleep_duration": 30,
+      "password": "a1b2c3d4e5"
+    },
+    "s5": {
+      "s5_duration": 30,
+      "password": "a1b2c3d4e5"
     }
   }
 }

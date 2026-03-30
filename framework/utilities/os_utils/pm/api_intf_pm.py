@@ -16,7 +16,7 @@ class PmUtilsAPI:
     consistent interface for:
       - Restarting the system
       - Triggering S3 sleep/standby
-      - Performing system shutdown
+      - Performing system s5
 
     OS‑specific behaviors are delegated to:
       - `PMWindows` for Windows hosts
@@ -76,7 +76,7 @@ class PmUtilsAPI:
         """
         return self.__pm_utils_obj.restart(password)
 
-    def s3_sleep(self, password=None):
+    def s3(self, password=None, wake_after: int = None):
         """
         Trigger S3 sleep/standby mode on the target system.
 
@@ -90,20 +90,20 @@ class PmUtilsAPI:
         tuple
             (output, error, exit_status) from the OS‑specific S3 sleep operation.
         """
-        return self.__pm_utils_obj.s3_sleep(password)
+        return self.__pm_utils_obj.s3(password, wake_after)
 
-    def shutdown(self, password=None):
+    def s5(self, password=None):
         """
         Shut down the target system gracefully.
 
         Parameters
         ----------
         password : str, optional
-            Password required for privileged shutdown commands (if needed).
+            Password required for privileged s5 commands (if needed).
 
         Returns
         -------
         tuple
-            (output, error, exit_status) returned by the OS‑specific shutdown action.
+            (output, error, exit_status) returned by the OS‑specific s5 action.
         """
-        return self.__pm_utils_obj.shutdown()
+        return self.__pm_utils_obj.s5()

@@ -18,6 +18,7 @@ from tests.base_test import BaseTest
 from core.testbed_utils import TestbedUtils
 from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
 
+
 class RestartTest(BaseTest):
     """
     Test case to validate system restart functionality.
@@ -45,7 +46,7 @@ class RestartTest(BaseTest):
         testbed_utils = TestbedUtils(self.user_input.args.config)
         self.min_cores = testbed_utils.get_value("reboot")
         self.password = testbed_utils.get_value("password")
-     
+
     def do_test(self):
         """
         Execute the restart test on the target platform.
@@ -55,15 +56,16 @@ class RestartTest(BaseTest):
         - Creates an OSBaseAPI object for platform-level power management.
         - Invokes the restart command using the retrieved password.
         - Logs command output, error messages, and exit status.
-        - Determines test success if:
-            * the exit status is 0, or
-            * the output contains the word 'reboot' (case-insensitive).
-        - Updates the test result accordingly.
+        - Determines test success based on three scenarios:
+            * Success: exit_status is 0 or output contains 'reboot'.
+            * Empty output: command succeeded but returned no useful result.
+            * Failure: command failed or returned an unexpected error.
 
         Returns:
             int: The exit status returned by the restart command.
         """
         self.logger.info("Running Restart Test")
+
         pm_obj = OSBaseAPI(self.platform_obj)
         output, error, exit_status = pm_obj.pm.restart(self.password)
 
@@ -71,10 +73,23 @@ class RestartTest(BaseTest):
         self.logger.info(f"Error : {error}")
         self.logger.info(f"Exit Status : {exit_status}")
 
+        # Success scenario
         if exit_status == 0 or "reboot" in output.lower():
             self.result.set_result(True, "Restart triggered successfully")
+
+        # Command succeeded but no useful result
+        elif exit_status == 0 and not output.strip():
+            self.result.set_result(False, "Restart output was empty")
+            self.logger.error(
+                "No restart information returned despite successful command execution"
+            )
+
+        # Complete failure or unexpected error
         else:
-            self.result.set_result(False, "Restart failed")
+            self.result.set_result(False, f"Restart failed: {error}")
+            self.logger.error(
+                f"Restart command failed with error: {error}"
+            )
 
         return exit_status
 

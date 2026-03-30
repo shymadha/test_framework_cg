@@ -3,9 +3,7 @@ import os
 from pathlib import Path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Add project root BEFORE any framework imports
 current = Path(__file__).resolve()
-
 for parent in current.parents:
     if (parent / "framework").exists():
         sys.path.insert(0, str(parent))
@@ -27,7 +25,7 @@ class SleepTest(BaseTest):
 
     This test:
       - Reads 'sleep_duration' and 'password' parameters from the testbed config.
-      - Uses the OS power management API (`pm_obj.pm.s3_sleep`) to trigger S3 sleep.
+      - Uses the OS power management API (pm_obj.pm.s3_sleep) to trigger S3 sleep.
       - Logs output, errors, and status for debugging and analysis.
       - Marks the test as PASS if sleep was successfully triggered.
 
@@ -40,15 +38,15 @@ class SleepTest(BaseTest):
 
     def pre_test(self):
         """
-        Perform pre‑test initialization before running the sleep test.
+        Perform pre-test initialization before running the sleep test.
 
         Steps:
           1. Calls BaseTest.pre_test() to initialize platform, user input, and logger.
           2. Loads testbed configuration using TestbedUtils.
           3. Extracts:
-               - `sleep_duration`: duration the test expects the system to sleep.
-               - `password`: system password required to trigger S3 sleep.
-        
+               - sleep_duration: seconds the system should sleep before auto-wake.
+               - password: system password required to trigger S3 sleep.
+
         Raises
         ------
         Exception
@@ -65,9 +63,12 @@ class SleepTest(BaseTest):
 
         Steps:
           1. Creates an OSBaseAPI instance tied to the platform object.
-          2. Calls pm.s3_sleep(password) to initiate S3 sleep.
+          2. Calls pm.s3_sleep(password, wake_after) to initiate S3 sleep.
           3. Logs stdout, stderr, and exit status for transparency.
-          4. Sets result PASS if exit_status == 0; otherwise FAIL.
+          4. Determines PASS/FAIL based on three scenarios:
+               - Success: exit_status is 0.
+               - Empty output: command succeeded but returned no useful result.
+               - Complete failure: command failed or returned an unexpected error.
 
         Returns
         -------
@@ -82,16 +83,31 @@ class SleepTest(BaseTest):
         self.logger.info("Running Sleep Test")
 
         pm_obj = OSBaseAPI(self.platform_obj)
-        output, error, exit_status = pm_obj.pm.s3_sleep(self.password)
+        output, error, exit_status = pm_obj.pm.s3(
+            password=self.password, wake_after=self.sleep_duration
+        )
 
         self.logger.info(f"Output : {output}")
         self.logger.info(f"Error : {error}")
         self.logger.info(f"Exit Status : {exit_status}")
 
+        # Success scenario
         if exit_status == 0:
             self.result.set_result(True, "Sleep triggered successfully")
+
+        # Command succeeded but no useful result
+        elif exit_status == 0 and not output.strip():
+            self.result.set_result(False, "Sleep output was empty")
+            self.logger.error(
+                "No sleep information returned despite successful command execution"
+            )
+
+        # Complete failure or unexpected error
         else:
-            self.result.set_result(False, "Sleep failed")
+            self.result.set_result(False, f"Sleep failed: {error}")
+            self.logger.error(
+                f"Sleep command failed with error: {error}"
+            )
 
         return exit_status
 
