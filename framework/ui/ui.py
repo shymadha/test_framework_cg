@@ -121,7 +121,7 @@ with gr.Blocks(title="Test Framework UI") as demo:
             )
             run_button = gr.Button("▶ Run Test", variant="primary")
  
-    output = gr.TextArea(label="Execution Logs (FULL)", lines=35)
+    output = gr.TextArea(label="Execution Logs (FULL)", lines=10)
  
     config_file.change(load_json_content, inputs=config_file, outputs=json_display)
  
@@ -132,4 +132,5 @@ with gr.Blocks(title="Test Framework UI") as demo:
     )
  
 if __name__ == "__main__":
-    demo.launch(server_name="127.0.0.1", server_port=7860)
+    # demo.launch(server_name="127.0.0.1", server_port=7860)
+    demo.launch(server_name="127.0.0.1", server_port=7860,inbrowser=True)
