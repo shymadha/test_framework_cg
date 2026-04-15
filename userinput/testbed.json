@@ -5,16 +5,27 @@
       "interfaces": [
         {
           "type": "ssh",
+          "host": "192.168.7.2",
+          "username": "debian",
+          "password": "temppwd1",
+          "port": 22,
+          "timeout": 30
+        }
+      ]
+    },
+    {
+      "platform": "windows",
+      "interfaces": [
+        {
+          "type": "ssh",
           "host": "10.204.209.63",
           "username": "capge",
-          "password": "a1b2c3d4e5"
-        },
-        {
-          "type": "local"
+          "password": "a1b2c3d4e5",
+          "port": 22,
+          "timeout": 30
         }
       ]
     }
-    
   ],
   "tests": {
     "CpuDetectionTest": {
@@ -32,13 +43,32 @@
     "EthernetConnectivityTest": {
       "target_host": "google.com"
     },
-    "SleepTest": {
-      "sleep_duration": 30,
-      "password": "a1b2c3d4e5"
+    "GpioOutputToggleTest": {
+      "gpio_pin": 23,
+      "chip": "gpiochip0"
     },
-    "s5": {
-      "s5_duration": 30,
-      "password": "a1b2c3d4e5"
+    "GpioInputReadTest": {
+      "gpio_pin": 21,
+      "chip": "gpiochip0"
+    },
+    "GpioLedBlinkTest": {
+      "led_name": "beaglebone:green:usr0"
+    },
+    "GpioInterruptDetectTest_usr0": {
+      "gpio_pin": 21,
+      "chip": "gpiochip1"
+    },
+    "GpioInterruptDetectTest_usr1": {
+      "gpio_pin": 22,
+      "chip": "gpiochip1"
+    },
+    "GpioInterruptDetectTest_usr2": {
+      "gpio_pin": 23,
+      "chip": "gpiochip1"
+    },
+    "GpioInterruptDetectTest_usr3": {
+      "gpio_pin": 24,
+      "chip": "gpiochip1"
     }
   }
 }

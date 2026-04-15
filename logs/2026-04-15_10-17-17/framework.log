@@ -1,0 +1,8 @@
+2026-04-15 10:17:17 | INFO | TestEngine | Pre-test phase
+2026-04-15 10:17:17 | INFO | SSHInterface | [CONNECTED] 192.168.7.2
+2026-04-15 10:17:17 | INFO | LocalTestInterface | Local interface ready
+2026-04-15 10:17:21 | INFO | BeaglePlatform | Detected OS: linux
+2026-04-15 10:17:21 | INFO | GpioInputReadTest | Executing pre-test for GpioInputReadTest
+2026-04-15 10:17:21 | INFO | GpioInputReadTest | Running GPIO Input Read Test
+2026-04-15 10:17:22 | INFO | GpioInputReadTest | GpioInputReadTest: PASS
+2026-04-15 10:17:22 | INFO | SSHInterface | [DISCONNECTED] 192.168.7.2
