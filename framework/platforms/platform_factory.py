@@ -3,7 +3,7 @@ import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from platforms.beagle_platform import BeaglePlatform
-
+from platforms.winlap import Winlap
 
 class PlatformFactory:
     """
@@ -42,6 +42,7 @@ class PlatformFactory:
         """
         if name.lower() == "beagle":
             return BeaglePlatform()
-
+        elif name.lower() == "winlap":
+            return Winlap()
         else:
             raise ValueError("Unsupported platform")
