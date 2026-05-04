@@ -11,7 +11,7 @@ for parent in current.parents:
         sys.path.insert(0, str(parent))
         break
 from pathlib import Path
-from agents.orchestrator_state import OrchestratorState
+from agentic_ai.orchestrator_state import OrchestratorState
 
 
 def artifact_loader(state: OrchestratorState) -> OrchestratorState:

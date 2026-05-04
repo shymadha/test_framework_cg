@@ -12,7 +12,7 @@ for parent in current.parents:
         break
 from pathlib import Path
 from typing import Dict, List
-from agents.orchestrator_state import OrchestratorState
+from agentic_ai.orchestrator_state import OrchestratorState
 
 
 def analysis_agent(state: OrchestratorState) -> OrchestratorState:

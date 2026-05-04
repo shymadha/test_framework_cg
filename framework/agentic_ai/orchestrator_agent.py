@@ -11,14 +11,14 @@ for parent in current.parents:
         sys.path.insert(0, str(parent))
         break
 from langgraph.graph import StateGraph, END
-from agents.orchestrator_state import OrchestratorState
+from agentic_ai.orchestrator_state import OrchestratorState
 
-from agents.interpreter_agent import interpreter_agent       # CLASSIFYING
-from agents.executor_agent import executor_agent             # EXECUTING
-from agents.artifact_loader_agent import artifact_loader     # ARTIFACT_READY
-from agents.analysis_agent import analysis_agent             # ANALYZING
-from agents.report_agent import report_agent                 # REPORTING
-from agents.reporting_placeholder import reporting_placeholder #temporary placeholder
+from agentic_ai.interpreter_agent import interpreter_agent       # CLASSIFYING
+from agentic_ai.executor_agent import executor_agent             # EXECUTING
+from agentic_ai.artifact_loader_agent import artifact_loader     # ARTIFACT_READY
+from agentic_ai.analysis_agent import analysis_agent             # ANALYZING
+from agentic_ai.report_agent import report_agent                 # REPORTING
+from agentic_ai.reporting_placeholder import reporting_placeholder #temporary placeholder
 
 def route_by_intent(state: OrchestratorState):
     """
