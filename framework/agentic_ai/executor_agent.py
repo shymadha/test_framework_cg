@@ -64,7 +64,7 @@ def executor_agent(state):
         # 4. Execute test
         logger.info("Executing test")
         engine = test_instance.run()
-        print(f"Engine.result is {engine}")
+        #print(f"Engine.result is {engine}")
 
         # 5. Post-test
         #engine.post_test()
