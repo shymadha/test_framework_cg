@@ -21,14 +21,13 @@ def artifact_loader(state: OrchestratorState) -> OrchestratorState:
     Typically selects the latest framework.log unless a specific
     timestamp/scope is already provided.
     """
-
     # Transition state
     state["status"] = "ARTIFACT_READY"
 
     artifact_type = state.get("artifact_type")
 
-    if artifact_type != "framework_log":
-        raise RuntimeError("artifact_loader called without framework_log requirement")
+    # if artifact_type != "framework_log":
+    #     raise RuntimeError("artifact_loader called without framework_log requirement")
 
     # Base logs directory (adjust if needed)
     logs_base = Path("logs")

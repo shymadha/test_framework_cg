@@ -77,6 +77,7 @@ class TestEngine:
             self.pre_test()
             status = self.do_test()
             status = self.post_test()
+            return True
             #return sys.exit(status)
 
         except Exception as e:

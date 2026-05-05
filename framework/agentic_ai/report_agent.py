@@ -1,6 +1,8 @@
 import sys
 import os
 from pathlib import Path
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Add project root BEFORE any framework imports
@@ -12,8 +14,11 @@ for parent in current.parents:
         break
 from pathlib import Path
 from datetime import datetime
-import json
 from agentic_ai.orchestrator_state import OrchestratorState
+
+from dotenv import load_dotenv
+load_dotenv()
+api_key = os.getenv("api_key")
 
 def _resolve_latest_execution() -> str:
     reports_dir = Path("reports")
@@ -43,44 +48,56 @@ def report_agent(state: OrchestratorState) -> OrchestratorState:
     """
 
     state["status"] = "REPORTING"
-
-    # -------------------------------------------------
-    # Resolve report scope
-    # -------------------------------------------------
+    
     timestamp = state.get("timestamp")
-
     if not timestamp:
         # Default to latest execution if not already resolved
         timestamp = _resolve_latest_execution()
         state["timestamp"] = timestamp
 
-    # -------------------------------------------------
-    # Assemble report content
-    # -------------------------------------------------
-    report_data = {
-        "execution_timestamp": timestamp,
-        "test_name": state.get("test_name"),
-        "test_domain": state.get("test_domain"),
-        "platform": state.get("platform"),
-        "execution_method": state.get("execution_method"),
-        "execution_status": state.get("execution_status"),
-        "execution_output": state.get("execution_output"),
-        "analysis_output": state.get("analysis_output"),
-        "generated_at": datetime.utcnow().isoformat(),
-    }
+    # Context for LLM
+    report_context = f"""
+        You are a test execution reporter. Generate a clean, structured markdown report based on the
+        following execution data
+        
+        **Execution Data:**
+        - Timestamp : {timestamp}
+        - Test Name : {state.get("test_name", "N/A")}
+        - Test Domain: {state.get("test_domain", "N/A")}
+        - Platform : {state.get("platform", "N/A")}
+        - Execution Method : {state.get("execution_method", "N/A")}
+        - Execution Status : {state.get("execution_status", "N/A")}
+        
+        **Execution Output:** {state.get("execution_output", "No output available.")} 
+        **Analysis Output:** {state.get("analysis_output", "No analysis available.")} 
+        **Instructions:** 
+        - Use proper markdown headings (# ## ###) 
+        - Include a summary section at the top 
+        - Include a detailed findings section 
+        - Include a conclusion / recommendations section 
+        - Use tables, bullet points, and code blocks where appropriate 
+        - Keep the tone professional and concise
+    """
 
-    # -------------------------------------------------
-    # Persist report artifact
-    # -------------------------------------------------
-    reports_dir = Path("reports")
-    reports_dir.mkdir(exist_ok=True)
+    llm = ChatOpenAI(
+        model="openai.gpt-5.1",
+        base_url="https://openai.generative.engine.capgemini.com/v1",
+        api_key=api_key,
+        default_headers={
+            "x-api-key": api_key
+        },
+    )
+    response = llm.invoke([HumanMessage(content=report_context)]) 
+    markdown_report = response.content  
+    
+    reports_dir = Path("reports") 
+    reports_dir.mkdir(exist_ok=True) 
+    report_path = reports_dir / f"report_{timestamp}.md" 
 
-    report_path = reports_dir / f"report_{timestamp}.json"
-
-    with report_path.open("w", encoding="utf-8") as f:
-        json.dump(report_data, f, indent=2)
-
-    state["report_path"] = str(report_path)
-    state["status"] = "COMPLETED"
-
+    with report_path.open("w", encoding="utf-8") as f: 
+        f.write(f"<!-- Generated at: {datetime.utcnow().isoformat()} -->\n\n") 
+        f.write(markdown_report) 
+    
+    state["report_path"] = str(report_path) 
+    state["status"] = "COMPLETED" 
     return state
