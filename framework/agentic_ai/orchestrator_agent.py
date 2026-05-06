@@ -33,44 +33,52 @@ def route_by_execution_status(state: OrchestratorState):
     return state["execution_status"]   # PASSED | FAILED
 
 builder = StateGraph(OrchestratorState)
-builder.add_node("classifying", interpreter_agent)      # CLASSIFYING
-builder.add_node("executing", executor_agent)           # EXECUTING
+builder.add_node("classifying_intent", interpreter_agent)      # CLASSIFYING
+builder.add_node("executor_agent", executor_agent)           # EXECUTING
 builder.add_node("artifact_ready", artifact_loader)     # ARTIFACT_READY
-builder.add_node("analyzing", analysis_agent)            # ANALYZING
-builder.add_node("reporting", report_agent)              # REPORTING
-builder.add_node("reporting_placeholder", reporting_placeholder)
+builder.add_node("analysis_agent", analysis_agent)            # ANALYZING
+builder.add_node("reporting_agent", report_agent)              # REPORTING
+builder.add_node("reporting_artificact_ready", reporting_placeholder)
 
-builder.set_entry_point("classifying")
+builder.set_entry_point("classifying_intent")
 builder.add_conditional_edges(
-    "classifying",
+    "classifying_intent",
     route_by_intent,
     {
-        "execute": "executing",
+        "execute": "executor_agent",
         "rca": "artifact_ready",
-        "report": "reporting",
+        "report": "reporting_agent",
     },
 )
 builder.add_conditional_edges(
-    "executing",
+    "executor_agent",
     route_by_execution_status,
     {
-        "PASSED": "reporting_placeholder", #to use reporting
+        "PASSED": "reporting_artificact_ready", #to use reporting
         "FAILED": "artifact_ready",
     },
 )
-
-builder.add_edge("artifact_ready", "analyzing")
-builder.add_edge("analyzing", "reporting")
-builder.add_edge("reporting", END)
+builder.add_edge("reporting_artificact_ready", "reporting_agent")
+builder.add_edge("artifact_ready", "analysis_agent")
+builder.add_edge("analysis_agent", "reporting_agent")
+builder.add_edge("reporting_agent", END)
 orchestrator_graph = builder.compile()
 
-result = orchestrator_graph.invoke(
-    {
+initial_state = {
         "user_request": "run cpu frequency test on beagle platform using ssh",
         "retry_count": 0,
         "status": "INIT",
     }
-)
 
-print(result["status"])   # COMPLETED
-#print(result.get("report_path"))
+for event in orchestrator_graph.stream(initial_state):
+    for node, state in event.items():
+        print("*"*50)
+        print(f"{node} execution completed")
+        print("*"*50)
+
+# result = orchestrator_graph.invoke(initial_state)
+
+# print("Root Cause Analysis")
+# from pprint import pprint
+
+# pprint(result["analysis_output"])

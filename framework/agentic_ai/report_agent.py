@@ -1,6 +1,8 @@
 import sys
 import os
 from pathlib import Path
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Add project root BEFORE any framework imports
@@ -12,8 +14,11 @@ for parent in current.parents:
         break
 from pathlib import Path
 from datetime import datetime
-import json
 from agentic_ai.orchestrator_state import OrchestratorState
+
+from dotenv import load_dotenv
+load_dotenv()
+api_key = os.getenv("api_key")
 
 def _resolve_latest_execution() -> str:
     reports_dir = Path("reports")
@@ -43,44 +48,76 @@ def report_agent(state: OrchestratorState) -> OrchestratorState:
     """
 
     state["status"] = "REPORTING"
-
-    # -------------------------------------------------
-    # Resolve report scope
-    # -------------------------------------------------
+    
     timestamp = state.get("timestamp")
-
     if not timestamp:
         # Default to latest execution if not already resolved
         timestamp = _resolve_latest_execution()
         state["timestamp"] = timestamp
 
-    # -------------------------------------------------
-    # Assemble report content
-    # -------------------------------------------------
-    report_data = {
-        "execution_timestamp": timestamp,
-        "test_name": state.get("test_name"),
-        "test_domain": state.get("test_domain"),
-        "platform": state.get("platform"),
-        "execution_method": state.get("execution_method"),
-        "execution_status": state.get("execution_status"),
-        "execution_output": state.get("execution_output"),
-        "analysis_output": state.get("analysis_output"),
-        "generated_at": datetime.utcnow().isoformat(),
-    }
+    # Context for LLM
+    report_context = f"""
+        You are a test execution reporter. Create a concise professional markdown report.
 
-    # -------------------------------------------------
-    # Persist report artifact
-    # -------------------------------------------------
-    reports_dir = Path("reports")
-    reports_dir.mkdir(exist_ok=True)
+        Input:
+        - Timestamp: {timestamp}
+        - Test Name: {state.get("test_name", "N/A")}
+        - Test Domain: {state.get("test_domain", "N/A")}
+        - Platform: {state.get("platform", "N/A")}
+        - Method: {state.get("execution_method", "N/A")}
+        - Status: {state.get("execution_status", "N/A")}
+        - Execution Output: {state.get("execution_output", "No output available.")}
+        - Analysis Output: {state.get("analysis_output", "No analysis available.")}
 
-    report_path = reports_dir / f"report_{timestamp}.json"
+        Output structure:
+        # Test Execution Report
 
-    with report_path.open("w", encoding="utf-8") as f:
-        json.dump(report_data, f, indent=2)
+        ## Summary
+        3-5 bullets: status, main issue, confidence score + reason.
 
-    state["report_path"] = str(report_path)
-    state["status"] = "COMPLETED"
+        ## Root Cause Evidence
+        | Root Cause | Key Evidence | Failure Stage |
+        |---|---|---|
 
+        ## Recommended Fix
+        2-4 actionable bullets.
+
+        ## Execution Details
+        Compact metadata table.
+
+        ## Analysis Details
+        | Finding | Evidence | Impact |
+        |---|---|---|
+        Max 3-5 findings.
+
+        ## Conclusion
+        2-3 sentences: final assessment, issue category, next step.
+
+        Rules: 
+        1. Be brief, avoid repetition, no "Symptom vs Cause", use N/A if unknown, quote only critical logs.
+        2. Incase of status=passed, don't include Root Cause Evidence & Recommended Fix.
+        
+    """
+
+    llm = ChatOpenAI(
+        model="openai.gpt-5.1",
+        base_url="https://openai.generative.engine.capgemini.com/v1",
+        api_key=api_key,
+        default_headers={
+            "x-api-key": api_key
+        },
+    )
+    response = llm.invoke([HumanMessage(content=report_context)]) 
+    markdown_report = response.content  
+    
+    reports_dir = Path("reports") 
+    reports_dir.mkdir(exist_ok=True) 
+    report_path = reports_dir / f"report_{timestamp}.md" 
+
+    with report_path.open("w", encoding="utf-8") as f: 
+        f.write(f"<!-- Generated at: {datetime.utcnow().isoformat()} -->\n\n") 
+        f.write(markdown_report) 
+    
+    state["report_path"] = str(report_path) 
+    state["status"] = "COMPLETED" 
     return state
