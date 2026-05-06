@@ -57,26 +57,46 @@ def report_agent(state: OrchestratorState) -> OrchestratorState:
 
     # Context for LLM
     report_context = f"""
-        You are a test execution reporter. Generate a clean, structured markdown report based on the
-        following execution data
-        
-        **Execution Data:**
-        - Timestamp : {timestamp}
-        - Test Name : {state.get("test_name", "N/A")}
+        You are a test execution reporter. Create a concise professional markdown report.
+
+        Input:
+        - Timestamp: {timestamp}
+        - Test Name: {state.get("test_name", "N/A")}
         - Test Domain: {state.get("test_domain", "N/A")}
-        - Platform : {state.get("platform", "N/A")}
-        - Execution Method : {state.get("execution_method", "N/A")}
-        - Execution Status : {state.get("execution_status", "N/A")}
+        - Platform: {state.get("platform", "N/A")}
+        - Method: {state.get("execution_method", "N/A")}
+        - Status: {state.get("execution_status", "N/A")}
+        - Execution Output: {state.get("execution_output", "No output available.")}
+        - Analysis Output: {state.get("analysis_output", "No analysis available.")}
+
+        Output structure:
+        # Test Execution Report
+
+        ## Summary
+        3-5 bullets: status, main issue, confidence score + reason.
+
+        ## Root Cause Evidence
+        | Root Cause | Key Evidence | Failure Stage |
+        |---|---|---|
+
+        ## Recommended Fix
+        2-4 actionable bullets.
+
+        ## Execution Details
+        Compact metadata table.
+
+        ## Analysis Details
+        | Finding | Evidence | Impact |
+        |---|---|---|
+        Max 3-5 findings.
+
+        ## Conclusion
+        2-3 sentences: final assessment, issue category, next step.
+
+        Rules: 
+        1. Be brief, avoid repetition, no "Symptom vs Cause", use N/A if unknown, quote only critical logs.
+        2. Incase of status=passed, don't include Root Cause Evidence & Recommended Fix.
         
-        **Execution Output:** {state.get("execution_output", "No output available.")} 
-        **Analysis Output:** {state.get("analysis_output", "No analysis available.")} 
-        **Instructions:** 
-        - Use proper markdown headings (# ## ###) 
-        - Include a summary section at the top 
-        - Include a detailed findings section 
-        - Include a conclusion / recommendations section 
-        - Use tables, bullet points, and code blocks where appropriate 
-        - Keep the tone professional and concise
     """
 
     llm = ChatOpenAI(
