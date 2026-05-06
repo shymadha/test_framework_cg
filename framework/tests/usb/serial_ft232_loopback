@@ -1,0 +1,278 @@
+"""
+usb_004_serial_ft232_loopback.py
+---------------------------------
+USB-004 — Serial FT232 Loopback Test
+
+Validates the FT232/PL2303 USB-to-UART adapter by confirming USB
+enumeration, port node creation, and end-to-end serial data integrity
+through a hardware loopback (TX pin shorted to RX pin).
+
+Hardware requirement
+--------------------
+Connect a jumper wire between the TX and RX pins of the adapter before
+running this test.
+
+Test steps
+----------
+Step 1 — Detect adapter
+    Linux  : ``lsusb | grep -i "FTDI|FT232|Prolific|PL2303"``
+    Windows: ``Get-PnpDevice`` matching VID/PID or FriendlyName
+
+Step 2 — Check port assignment
+    Linux  : ``ls /dev/ttyUSB*``
+    Windows: ``Get-PnpDevice -Class Ports`` matching COMx
+
+Step 3 — Run loopback test
+    Execute ``usb_loopback.py`` on the target and parse
+    ``Result: N/M passed``.
+
+Pass criteria
+-------------
+- Adapter detected on USB bus (Step 1).
+- Port node exists (Step 2).
+- All loopback payloads pass: N == M (Step 3).
+
+Test ID : USB-004
+Category: USB / Serial
+Platform: Linux (BeagleBone Black or equivalent) / Windows
+"""
+
+import sys
+from pathlib import Path
+
+current = Path(__file__).resolve()
+for parent in current.parents:
+    if (parent / "framework").exists():
+        sys.path.insert(0, str(parent))
+        break
+
+from framework.tests.base_test import BaseTest
+from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
+
+
+class USBSerialFT232LoopbackTest(BaseTest):
+    """
+    USB-004: Serial FT232 Loopback test.
+
+    Platform defaults are resolved automatically in ``pre_test``.
+
+    Class attributes
+    ----------------
+    PORT : str or None
+        Linux tty path. ``None`` = auto (``/dev/ttyUSB0``).
+    COM_PORT : str or None
+        Windows COM port. ``None`` = auto (``COM3``).
+    BAUD : int
+        Baud rate.
+    LOOPBACK_SCRIPT_REMOTE : str or None
+        Script path on target. ``None`` = auto per platform.
+    LOOPBACK_SCRIPT_LOCAL : str or None
+        Local path for auto-deploy. ``None`` = skip deploy.
+    FT232_VID_PID : str
+        Linux VID:PID e.g. ``"067b:2303"`` for PL2303.
+    VID_PID_PATTERN : str
+        Windows InstanceId pattern e.g. ``"VID_067B&PID_2303"``.
+    """
+
+    PORT                   = None
+    COM_PORT               = None
+    BAUD                   = 115200
+    LOOPBACK_SCRIPT_REMOTE = None
+    LOOPBACK_SCRIPT_LOCAL  = None
+    FT232_VID_PID          = "067b:2303"
+    VID_PID_PATTERN        = "VID_067B&PID_2303"
+
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
+
+    def pre_test(self):
+        super().pre_test()
+
+        os_key = (
+            getattr(self.platform_obj, "os_type",     None) or
+            getattr(self.platform_obj, "detected_os", None) or
+            getattr(self.platform_obj, "os",          None) or
+            "linux"
+        ).lower()
+
+        self._is_windows = (os_key == "windows")
+
+        # Apply platform defaults if not overridden
+        if self._is_windows:
+            if self.COM_PORT is None:
+                self.COM_PORT = "COM3"
+            if self.LOOPBACK_SCRIPT_REMOTE is None:
+                self.LOOPBACK_SCRIPT_REMOTE = "C:\\Temp\\usb_loopback.py"
+            self._active_port = self.COM_PORT
+        else:
+            if self.PORT is None:
+                self.PORT = "/dev/ttyUSB0"
+            if self.LOOPBACK_SCRIPT_REMOTE is None:
+                self.LOOPBACK_SCRIPT_REMOTE = "/tmp/usb_loopback.py"
+            self._active_port = self.PORT
+
+        self.logger.info(
+            f"USB-004 | pre_test: port={self._active_port}  baud={self.BAUD}  "
+            f"script={self.LOOPBACK_SCRIPT_REMOTE}  "
+            f"vid_pid={self.FT232_VID_PID if not self._is_windows else self.VID_PID_PATTERN}"
+        )
+
+    def do_test(self):
+        self.logger.info("USB-004 | do_test: starting")
+
+        ft_api = OSBaseAPI(self.platform_obj).usb_serial_ft232
+
+        if self.LOOPBACK_SCRIPT_LOCAL:
+            self._deploy_script(ft_api)
+
+        exit_status = self._step1_detect(ft_api)
+        if exit_status != 0:
+            return exit_status
+
+        exit_status, port = self._step2_port(ft_api)
+        if exit_status != 0:
+            return exit_status
+
+        exit_status = self._step3_loopback(ft_api, port)
+
+        self.logger.info("USB-004 | do_test: complete")
+        return exit_status
+
+    def post_test(self):
+        self.logger.info(f"USB-004 | post_test: final result — {self.result}")
+        super().post_test()
+
+    # ------------------------------------------------------------------
+    # Sub-step helpers
+    # ------------------------------------------------------------------
+
+    def _deploy_script(self, ft_api):
+        self.logger.info(
+            f"USB-004 | Deploy: uploading {self.LOOPBACK_SCRIPT_LOCAL} "
+            f"→ {self.LOOPBACK_SCRIPT_REMOTE}"
+        )
+        try:
+            output, error, status = ft_api.deploy_loopback_script(
+                self.LOOPBACK_SCRIPT_LOCAL
+            )
+            if status != 0:
+                self.logger.warning(f"USB-004 | Deploy warning — exit {status}: {error}")
+            else:
+                self.logger.info("USB-004 | Deploy complete")
+        except AttributeError:
+            self.logger.warning(
+                "USB-004 | Deploy skipped — platform does not support upload_file()"
+            )
+
+    def _step1_detect(self, ft_api) -> int:
+        label = self.VID_PID_PATTERN if self._is_windows else self.FT232_VID_PID
+        self.logger.info(
+            f"USB-004 | Step 1: scanning for serial adapter ({label})"
+        )
+        output, error, exit_status = ft_api.detect_ft232()
+        self.logger.info(f"USB-004 | Step 1 output: {output.strip()}")
+
+        if exit_status != 0 or not output.strip():
+            self.result.set_result(
+                False, "Step 1 FAIL — serial adapter not detected on USB bus"
+            )
+            self.logger.error("USB-004 | Step 1: no adapter entry found")
+            return 1
+
+        self.logger.info(f"USB-004 | Step 1 PASS — adapter detected: {output.strip()}")
+        return 0
+
+    def _step2_port(self, ft_api):
+        """
+        Step 2 — Confirm port node exists.
+
+        Returns
+        -------
+        tuple[int, str]
+            ``(exit_status, port_path)``
+        """
+        self.logger.info("USB-004 | Step 2: checking port assignment")
+        output, error, exit_status = ft_api.check_tty_port()
+        self.logger.info(f"USB-004 | Step 2 output: {output.strip()}")
+
+        if exit_status != 0 or not output.strip():
+            self.result.set_result(
+                False, "Step 2 FAIL — no serial port node found"
+            )
+            self.logger.error("USB-004 | Step 2: port check returned no results")
+            return 1, ""
+
+        port = ft_api.extract_first_tty(output)
+        if not port:
+            self.result.set_result(
+                False, "Step 2 FAIL — could not parse port from output"
+            )
+            self.logger.error("USB-004 | Step 2: port extraction failed")
+            return 1, ""
+
+        self.logger.info(f"USB-004 | Step 2 PASS — port assigned: {port}")
+        return 0, port
+
+    def _step3_loopback(self, ft_api, port: str) -> int:
+        self.logger.info(
+            f"USB-004 | Step 3: running loopback test on {port} at {self.BAUD} baud"
+        )
+
+        output, error, exit_status = ft_api.run_loopback_test(
+            port=port, baud=self.BAUD
+        )
+
+        for line in output.splitlines():
+            self.logger.info(f"USB-004 | Step 3 | {line}")
+
+        if error.strip():
+            self.logger.warning(f"USB-004 | Step 3 stderr: {error.strip()}")
+
+        if exit_status == 2:
+            self.result.set_result(
+                False, f"Step 3 FAIL — could not open serial port {port}"
+            )
+            self.logger.error(
+                f"USB-004 | Step 3: serial port open failed: {error.strip()}"
+            )
+            return exit_status
+
+        passed, total = ft_api.parse_loopback_result(output)
+
+        if passed is None or total is None:
+            self.result.set_result(
+                False,
+                "Step 3 FAIL — could not parse result summary from loopback output"
+            )
+            self.logger.error(
+                "USB-004 | Step 3: 'Result: N/M passed' line not found in output"
+            )
+            return 1
+
+        self.logger.info(f"USB-004 | Step 3: loopback result — {passed}/{total} passed")
+
+        if passed == total and total > 0:
+            self.result.set_result(
+                True,
+                f"USB-004 PASS — {passed}/{total} loopback payloads verified on "
+                f"{port} at {self.BAUD} baud"
+            )
+            self.logger.info(f"USB-004 | Step 3 PASS — all {total} payloads echoed correctly")
+            return 0
+
+        self.result.set_result(
+            False,
+            f"Step 3 FAIL — only {passed}/{total} payloads echoed correctly "
+            f"(check TX→RX loopback jumper)"
+        )
+        self.logger.error(
+            f"USB-004 | Step 3 FAIL — {total - passed} payload(s) mismatched; "
+            "verify loopback jumper is fitted on TX and RX pins"
+        )
+        return 1
+
+
+if __name__ == "__main__":
+    test = USBSerialFT232LoopbackTest()
+    test.run()

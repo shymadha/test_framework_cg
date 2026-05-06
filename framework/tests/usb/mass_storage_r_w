@@ -1,0 +1,322 @@
+"""
+usb_002_mass_storage_rw.py
+---------------------------
+USB-002 — USB Mass Storage Read / Write Test
+
+Validates that a connected USB mass storage device (pen drive) can be
+mounted, sustains sequential write and read operations, and unmounts
+cleanly, with no data-pipeline errors reported by the kernel.
+
+Test steps
+----------
+Step 1 — Mount pen drive
+    Linux : Create ``/mnt/pendrive``, mount ``/dev/sda1``, confirm via ``df -h``.
+    Windows: Confirm drive letter accessible via ``Get-PSDrive``.
+
+Step 2 — Write speed test
+    Linux  : ``dd`` with ``oflag=sync``.
+    Windows: ``fsutil`` with PowerShell timing.
+
+Step 3 — Read speed test
+    Linux  : ``dd`` with ``iflag=direct``.
+    Windows: PowerShell ``ReadAllBytes`` with timing.
+
+Step 4 — Cleanup and unmount
+    Remove test file and unmount / release drive.
+
+Pass criteria
+-------------
+- Every step exits with status 0.
+- Step 1 confirms the mount point / drive is accessible.
+- Steps 2 & 3 contain a parseable speed value.
+- Step 4 produces no errors.
+
+Test ID : USB-002
+Category: USB
+Platform: Linux (BeagleBone Black or equivalent) / Windows
+"""
+
+import sys
+from pathlib import Path
+
+current = Path(__file__).resolve()
+for parent in current.parents:
+    if (parent / "framework").exists():
+        sys.path.insert(0, str(parent))
+        break
+
+from framework.tests.base_test import BaseTest
+from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
+
+
+class USBMassStorageRWTest(BaseTest):
+    """
+    USB-002: Mass Storage Read / Write test.
+
+    Platform defaults are resolved automatically in ``pre_test``.
+    Override any class attribute to adapt for non-default hardware.
+
+    Class attributes
+    ----------------
+    DEVICE : str or None
+        Block device (Linux) or drive letter (Windows). ``None`` = auto.
+    MOUNT_POINT : str or None
+        Mount directory (Linux) or drive letter (Windows). ``None`` = auto.
+    TEST_FILE : str
+        Temporary filename written during the test.
+    BLOCK_SIZE_MB : int
+        ``dd`` block size in MB (Linux only).
+    COUNT : int
+        Number of blocks; total = ``BLOCK_SIZE_MB × COUNT`` MB (Linux).
+    FILE_SIZE_MB : int
+        File size in MB (Windows).
+    MIN_WRITE_SPEED_MB : float or None
+        Minimum acceptable write speed in MB/s. ``None`` disables gate.
+    MIN_READ_SPEED_MB : float or None
+        Minimum acceptable read speed in MB/s. ``None`` disables gate.
+    """
+
+    DEVICE           = None   # auto: /dev/sda1 (Linux) | not used (Windows)
+    MOUNT_POINT      = None   # auto: /mnt/pendrive (Linux) | D: (Windows)
+    TEST_FILE        = "test_write.bin"
+    BLOCK_SIZE_MB    = 1
+    COUNT            = 256
+    FILE_SIZE_MB     = 256
+    MIN_WRITE_SPEED_MB = None
+    MIN_READ_SPEED_MB  = None
+
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
+
+    def pre_test(self):
+        super().pre_test()
+
+        os_key = (
+            getattr(self.platform_obj, "os_type",     None) or
+            getattr(self.platform_obj, "detected_os", None) or
+            getattr(self.platform_obj, "os",          None) or
+            "linux"
+        ).lower()
+
+        self._is_windows = (os_key == "windows")
+
+        # Apply platform defaults if not overridden
+        if self._is_windows:
+            if self.MOUNT_POINT is None:
+                self.MOUNT_POINT = "D:"
+            if self.DEVICE is None:
+                self.DEVICE = self.MOUNT_POINT
+        else:
+            if self.DEVICE is None:
+                self.DEVICE = "/dev/sda1"
+            if self.MOUNT_POINT is None:
+                self.MOUNT_POINT = "/mnt/pendrive"
+
+        total_mb = self.FILE_SIZE_MB if self._is_windows else self.BLOCK_SIZE_MB * self.COUNT
+        self.logger.info(
+            f"USB-002 | pre_test: device={self.DEVICE}  "
+            f"mount={self.MOUNT_POINT}  "
+            f"transfer={total_mb} MB  "
+            f"min_write={self.MIN_WRITE_SPEED_MB} MB/s  "
+            f"min_read={self.MIN_READ_SPEED_MB} MB/s"
+        )
+
+    def do_test(self):
+        self.logger.info("USB-002 | do_test: starting")
+
+        ms_api = OSBaseAPI(self.platform_obj).usb_mass_storage
+
+        early_fail = False
+
+        exit_status = self._step1_mount(ms_api)
+        if exit_status != 0:
+            early_fail = True
+
+        if not early_fail:
+            exit_status = self._step2_write(ms_api)
+            if exit_status != 0:
+                early_fail = True
+
+        if not early_fail:
+            exit_status = self._step3_read(ms_api)
+            if exit_status != 0:
+                early_fail = True
+
+        exit_status = self._step4_cleanup(ms_api)
+
+        if early_fail:
+            self.logger.warning(
+                "USB-002 | do_test: an earlier step failed — "
+                "final result reflects that failure"
+            )
+        else:
+            self.result.set_result(
+                True,
+                "USB-002 PASS — mount, write, read, and unmount all succeeded"
+            )
+            self.logger.info("USB-002 | do_test: complete")
+
+        return exit_status
+
+    def post_test(self):
+        self.logger.info(f"USB-002 | post_test: final result — {self.result}")
+        super().post_test()
+
+    # ------------------------------------------------------------------
+    # Sub-step helpers
+    # ------------------------------------------------------------------
+
+    def _step1_mount(self, ms_api) -> int:
+        self.logger.info(
+            f"USB-002 | Step 1: mounting {self.DEVICE} → {self.MOUNT_POINT}"
+        )
+        output, error, exit_status = ms_api.mount_device()
+        self.logger.info(f"USB-002 | Step 1 output:\n{output}")
+
+        if exit_status != 0:
+            self.result.set_result(
+                False,
+                f"Step 1 FAIL — mount command returned exit status {exit_status}"
+            )
+            self.logger.error(f"USB-002 | Step 1 error: {error}")
+            return exit_status
+
+        # Windows: check drive letter; Linux: check mount point in df
+        check_str = self.MOUNT_POINT.rstrip(":\\")
+        if check_str not in output:
+            self.result.set_result(
+                False,
+                f"Step 1 FAIL — mount point '{self.MOUNT_POINT}' "
+                "not confirmed in output"
+            )
+            self.logger.error(
+                f"USB-002 | Step 1: mount not confirmed at {self.MOUNT_POINT}"
+            )
+            return 1
+
+        self.logger.info(
+            f"USB-002 | Step 1 PASS — {self.DEVICE} mounted at {self.MOUNT_POINT}"
+        )
+        return exit_status
+
+    def _step2_write(self, ms_api) -> int:
+        total_mb = self.FILE_SIZE_MB if self._is_windows else self.BLOCK_SIZE_MB * self.COUNT
+        self.logger.info(f"USB-002 | Step 2: writing {total_mb} MB to {self.MOUNT_POINT}")
+
+        output, error, exit_status = ms_api.write_speed_test()
+        self.logger.info(f"USB-002 | Step 2 stdout: {output}")
+        self.logger.info(f"USB-002 | Step 2 stderr: {error}")
+
+        if exit_status != 0:
+            self.result.set_result(
+                False,
+                f"Step 2 FAIL — write command returned exit status {exit_status}"
+            )
+            self.logger.error(f"USB-002 | Step 2 error: {error}")
+            return exit_status
+
+        combined = output + "\n" + error
+        speed_val, speed_unit = ms_api.parse_speed(combined)
+
+        if speed_val is None:
+            self.result.set_result(
+                False, "Step 2 FAIL — could not parse write speed from output"
+            )
+            self.logger.error("USB-002 | Step 2: no speed value found in output")
+            return 1
+
+        self.logger.info(f"USB-002 | Step 2: measured write speed = {speed_val} {speed_unit}")
+
+        if self.MIN_WRITE_SPEED_MB is not None:
+            speed_in_mb = self._normalise_to_mb(speed_val, speed_unit)
+            if speed_in_mb < self.MIN_WRITE_SPEED_MB:
+                self.result.set_result(
+                    False,
+                    f"Step 2 FAIL — write speed {speed_in_mb:.1f} MB/s "
+                    f"below minimum {self.MIN_WRITE_SPEED_MB} MB/s"
+                )
+                return 1
+
+        self.logger.info(f"USB-002 | Step 2 PASS — write speed {speed_val} {speed_unit}")
+        return exit_status
+
+    def _step3_read(self, ms_api) -> int:
+        self.logger.info(f"USB-002 | Step 3: reading from {self.MOUNT_POINT}")
+
+        output, error, exit_status = ms_api.read_speed_test()
+        self.logger.info(f"USB-002 | Step 3 stdout: {output}")
+        self.logger.info(f"USB-002 | Step 3 stderr: {error}")
+
+        if exit_status != 0:
+            self.result.set_result(
+                False,
+                f"Step 3 FAIL — read command returned exit status {exit_status}"
+            )
+            self.logger.error(f"USB-002 | Step 3 error: {error}")
+            return exit_status
+
+        combined = output + "\n" + error
+        speed_val, speed_unit = ms_api.parse_speed(combined)
+
+        if speed_val is None:
+            self.result.set_result(
+                False, "Step 3 FAIL — could not parse read speed from output"
+            )
+            self.logger.error("USB-002 | Step 3: no speed value found in output")
+            return 1
+
+        self.logger.info(f"USB-002 | Step 3: measured read speed = {speed_val} {speed_unit}")
+
+        if self.MIN_READ_SPEED_MB is not None:
+            speed_in_mb = self._normalise_to_mb(speed_val, speed_unit)
+            if speed_in_mb < self.MIN_READ_SPEED_MB:
+                self.result.set_result(
+                    False,
+                    f"Step 3 FAIL — read speed {speed_in_mb:.1f} MB/s "
+                    f"below minimum {self.MIN_READ_SPEED_MB} MB/s"
+                )
+                return 1
+
+        self.logger.info(f"USB-002 | Step 3 PASS — read speed {speed_val} {speed_unit}")
+        return exit_status
+
+    def _step4_cleanup(self, ms_api) -> int:
+        self.logger.info(
+            f"USB-002 | Step 4: removing test file and unmounting {self.MOUNT_POINT}"
+        )
+        output, error, exit_status = ms_api.cleanup_and_unmount()
+
+        if exit_status != 0:
+            self.result.set_result(
+                False,
+                f"Step 4 FAIL — cleanup returned exit status {exit_status}"
+            )
+            self.logger.error(f"USB-002 | Step 4 error: {error}")
+            return exit_status
+
+        if error.strip():
+            self.logger.warning(f"USB-002 | Step 4: unexpected stderr: {error}")
+
+        self.logger.info(
+            "USB-002 | Step 4 PASS — test file removed and device unmounted cleanly"
+        )
+        return exit_status
+
+    # ------------------------------------------------------------------
+    # Utility
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _normalise_to_mb(value: float, unit: str) -> float:
+        unit_lower = unit.lower()
+        if "gb" in unit_lower:
+            return value * 1024.0
+        if "kb" in unit_lower:
+            return value / 1024.0
+        return value
+
+
+if __name__ == "__main__":
+    test = USBMassStorageRWTest()
+    test.run()

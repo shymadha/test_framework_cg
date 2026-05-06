@@ -1,0 +1,216 @@
+"""
+usb_001_device_detection.py
+----------------------------
+USB-001 — USB Device Detection Test
+
+Validates that the target platform can enumerate connected USB devices
+and expose correct descriptor information for a detected peripheral.
+
+Test steps
+----------
+Step 1 — List USB Devices
+    Run ``lsusb`` (Linux) or ``Get-PnpDevice`` (Windows) and confirm at
+    least one non-root-hub device is present.
+
+Step 2 — Detailed Device Info
+    Retrieve descriptor details for the device found in Step 1 and verify
+    that all platform-appropriate mandatory fields are present.
+
+    Linux  : ``idVendor``, ``idProduct``, ``bcdUSB``, ``MaxPower``
+    Windows: ``Status``, ``Class``, ``FriendlyName``, ``InstanceId``,
+             ``Manufacturer``
+
+Pass criteria
+-------------
+- List command exits with status 0.
+- At least one enumerated device is NOT a root hub.
+- Detail output contains all platform-appropriate required fields.
+
+Test ID : USB-001
+Category: USB
+Platform: Linux (BeagleBone Black or equivalent) / Windows
+"""
+
+import sys
+from pathlib import Path
+
+# ---------------------------------------------------------------------------
+# Ensure the project root is on sys.path
+# ---------------------------------------------------------------------------
+current = Path(__file__).resolve()
+for parent in current.parents:
+    if (parent / "framework").exists():
+        sys.path.insert(0, str(parent))
+        break
+
+from framework.tests.base_test import BaseTest
+from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
+
+
+# Descriptor fields per platform
+_REQUIRED_DETAIL_FIELDS_LINUX   = ("idVendor", "idProduct", "bcdUSB", "MaxPower")
+_REQUIRED_DETAIL_FIELDS_WINDOWS = ("Status", "Class", "FriendlyName", "InstanceId", "Manufacturer")
+
+
+class USBDeviceDetectionTest(BaseTest):
+    """
+    USB-001: Device Detection test.
+
+    Runs two sequential sub-steps against the target platform:
+
+    1. :meth:`_step1_list_devices`   – enumerate USB bus.
+    2. :meth:`_step2_device_details` – inspect a peripheral's descriptors.
+
+    The overall result is PASS only when both sub-steps succeed.
+    """
+
+    def pre_test(self):
+        super().pre_test()
+        self.logger.info("USB-001 | pre_test: initialising USB Device Detection test")
+
+    def do_test(self):
+        self.logger.info("USB-001 | do_test: starting")
+
+        usb_api = OSBaseAPI(self.platform_obj).usb
+
+        # Determine required fields based on detected OS
+        os_key = (
+            getattr(self.platform_obj, "os_type",     None) or
+            getattr(self.platform_obj, "detected_os", None) or
+            getattr(self.platform_obj, "os",          None) or
+            "linux"
+        ).lower()
+
+        required_fields = (
+            _REQUIRED_DETAIL_FIELDS_WINDOWS
+            if os_key == "windows"
+            else _REQUIRED_DETAIL_FIELDS_LINUX
+        )
+
+        # ---- Step 1: enumerate devices ----------------------------------------
+        exit_status, device_id = self._step1_list_devices(usb_api)
+        if exit_status != 0 or device_id is None:
+            return exit_status
+
+        # ---- Step 2: inspect descriptors of the discovered device ---------------
+        exit_status = self._step2_device_details(usb_api, device_id, required_fields)
+
+        self.logger.info("USB-001 | do_test: complete")
+        return exit_status
+
+    # ---------------------------------------------------------------------------
+    # Private sub-step helpers
+    # ---------------------------------------------------------------------------
+
+    def _step1_list_devices(self, usb_api):
+        """
+        Step 1 — List USB devices.
+
+        Returns
+        -------
+        tuple[int, str or None]
+            - **exit_status** : Shell exit code.
+            - **device_id**   : VID:PID (Linux) or FriendlyName (Windows) of
+              the first peripheral found, or ``None`` on failure.
+        """
+        self.logger.info("USB-001 | Step 1: listing USB devices (lsusb)")
+
+        output, error, exit_status = usb_api.list_devices()
+        self.logger.info(f"USB-001 | Step 1 output:\n{output}")
+
+        if exit_status != 0:
+            self.result.set_result(
+                False,
+                f"Step 1 FAIL — list command returned exit status {exit_status}"
+            )
+            self.logger.error(f"USB-001 | Step 1 error: {error}")
+            return exit_status, None
+
+        if not output.strip():
+            self.result.set_result(False, "Step 1 FAIL — list command produced no output")
+            self.logger.error("USB-001 | Step 1: empty output despite exit status 0")
+            return exit_status, None
+
+        device_id = usb_api.parse_non_hub_device(output)
+        if device_id is None:
+            self.result.set_result(
+                False,
+                "Step 1 FAIL — no non-root-hub peripheral found"
+            )
+            self.logger.error(
+                "USB-001 | Step 1: all enumerated devices are root hubs — "
+                "no physical peripheral detected"
+            )
+            return exit_status, None
+
+        self.logger.info(f"USB-001 | Step 1 PASS — peripheral detected: {device_id}")
+        return exit_status, device_id
+
+    def _step2_device_details(self, usb_api, device_id: str, required_fields: tuple):
+        """
+        Step 2 — Retrieve and validate descriptor fields.
+
+        Parameters
+        ----------
+        usb_api : USBUtilsAPI
+            Initialised USB API instance.
+        device_id : str
+            VID:PID (Linux) or FriendlyName/InstanceId pattern (Windows).
+        required_fields : tuple
+            Platform-appropriate field names that must appear in output.
+
+        Returns
+        -------
+        int
+            Shell exit status of the detail command.
+        """
+        self.logger.info(
+            f"USB-001 | Step 2: retrieving descriptor details for {device_id}"
+        )
+
+        output, error, exit_status = usb_api.get_device_details(device_id)
+        self.logger.info(f"USB-001 | Step 2 output:\n{output}")
+
+        if exit_status != 0:
+            self.result.set_result(
+                False,
+                f"Step 2 FAIL — descriptor command returned exit status {exit_status}"
+            )
+            self.logger.error(f"USB-001 | Step 2 error: {error}")
+            return exit_status
+
+        missing_fields = [f for f in required_fields if f not in output]
+
+        if missing_fields:
+            self.result.set_result(
+                False,
+                f"Step 2 FAIL — missing descriptor field(s): {', '.join(missing_fields)}"
+            )
+            self.logger.error(
+                f"USB-001 | Step 2: expected fields {required_fields}, "
+                f"missing: {missing_fields}"
+            )
+            return exit_status
+
+        self.logger.info(
+            f"USB-001 | Step 2 PASS — all required descriptor fields present "
+            f"for {device_id}"
+        )
+        self.result.set_result(
+            True,
+            f"USB-001 PASS — peripheral {device_id} detected and descriptors verified"
+        )
+        return exit_status
+
+    def post_test(self):
+        self.logger.info(f"USB-001 | post_test: final result — {self.result}")
+        super().post_test()
+
+
+# ---------------------------------------------------------------------------
+# Standalone entry point
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    test = USBDeviceDetectionTest()
+    test.run()

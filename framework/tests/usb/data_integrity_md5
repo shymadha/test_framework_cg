@@ -1,0 +1,277 @@
+"""
+usb_003_data_integrity_md5.py
+------------------------------
+USB-003 — USB Data Integrity MD5 Test
+
+Validates that data written to a USB mass storage device is bit-for-bit
+identical to the source by comparing MD5 checksums before and after the
+copy.
+
+Test steps
+----------
+Step 1 — Generate random file
+    Linux  : ``dd if=/dev/urandom`` → ``/tmp/source.bin``
+    Windows: PowerShell RNG → ``C:\\Windows\\Temp\\source.bin``
+
+Step 2 — Compute source MD5
+    Linux  : ``md5sum``
+    Windows: ``Get-FileHash -Algorithm MD5``
+
+Step 3 — Copy to pen drive
+    Linux  : Mount ``/dev/sda1``, ``cp``, ``sync``
+    Windows: ``Copy-Item``, ``Write-VolumeCache``
+
+Step 4 — Verify MD5 on pen drive
+    Same command as Step 2, targeting the copied file.
+
+Step 5 — Compare and result
+    Compare digests in Python. Match → PASS.
+
+Cleanup — always runs
+    Remove artefacts and unmount / release drive.
+
+Test ID : USB-003
+Category: USB
+Platform: Linux (BeagleBone Black or equivalent) / Windows
+"""
+
+import sys
+from pathlib import Path
+
+current = Path(__file__).resolve()
+for parent in current.parents:
+    if (parent / "framework").exists():
+        sys.path.insert(0, str(parent))
+        break
+
+from framework.tests.base_test import BaseTest
+from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
+
+
+class USBDataIntegrityMD5Test(BaseTest):
+    """
+    USB-003: Data Integrity MD5 test.
+
+    Platform defaults are resolved automatically in ``pre_test``.
+    Override any class attribute to adapt for non-default hardware.
+
+    Class attributes
+    ----------------
+    DEVICE : str or None
+        Block device (Linux). ``None`` = auto (``/dev/sda1``).
+    MOUNT_POINT : str or None
+        Mount dir (Linux) or drive letter (Windows). ``None`` = auto.
+    SOURCE_FILE : str or None
+        Temp source file path. ``None`` = auto per platform.
+    DEST_FILE : str
+        Filename written to the USB drive.
+    BLOCK_SIZE_MB : int
+        ``dd`` block size in MB (Linux).
+    COUNT : int
+        Number of blocks (Linux); total = ``BLOCK_SIZE_MB × COUNT`` MB.
+    FILE_SIZE_MB : int
+        File size in MB (Windows).
+    """
+
+    DEVICE        = None
+    MOUNT_POINT   = None
+    SOURCE_FILE   = None
+    DEST_FILE     = "integrity.bin"
+    BLOCK_SIZE_MB = 1
+    COUNT         = 50
+    FILE_SIZE_MB  = 50
+
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
+
+    def pre_test(self):
+        super().pre_test()
+
+        os_key = (
+            getattr(self.platform_obj, "os_type",     None) or
+            getattr(self.platform_obj, "detected_os", None) or
+            getattr(self.platform_obj, "os",          None) or
+            "linux"
+        ).lower()
+
+        self._is_windows = (os_key == "windows")
+
+        # Apply platform defaults if not overridden
+        if self._is_windows:
+            if self.MOUNT_POINT is None:
+                self.MOUNT_POINT = "E:"
+            if self.DEVICE is None:
+                self.DEVICE = self.MOUNT_POINT
+            if self.SOURCE_FILE is None:
+                self.SOURCE_FILE = "C:\\Windows\\Temp\\source.bin"
+        else:
+            if self.DEVICE is None:
+                self.DEVICE = "/dev/sda1"
+            if self.MOUNT_POINT is None:
+                self.MOUNT_POINT = "/mnt/pendrive"
+            if self.SOURCE_FILE is None:
+                self.SOURCE_FILE = "/tmp/source.bin"
+
+        total_mb = self.FILE_SIZE_MB if self._is_windows else self.BLOCK_SIZE_MB * self.COUNT
+        self.logger.info(
+            f"USB-003 | pre_test: device={self.DEVICE}  "
+            f"mount={self.MOUNT_POINT}  "
+            f"source={self.SOURCE_FILE}  "
+            f"dest={self.DEST_FILE}  "
+            f"size={total_mb} MB"
+        )
+
+    def do_test(self):
+        self.logger.info("USB-003 | do_test: starting")
+
+        di_api = OSBaseAPI(self.platform_obj).usb_data_integrity
+
+        source_md5_output = ""
+        dest_md5_output   = ""
+        early_fail        = False
+
+        exit_status = self._step1_generate(di_api)
+        if exit_status != 0:
+            early_fail = True
+
+        if not early_fail:
+            exit_status, source_md5_output = self._step2_source_md5(di_api)
+            if exit_status != 0:
+                early_fail = True
+
+        if not early_fail:
+            exit_status = self._step3_copy(di_api)
+            if exit_status != 0:
+                early_fail = True
+
+        if not early_fail:
+            exit_status, dest_md5_output = self._step4_drive_md5(di_api)
+            if exit_status != 0:
+                early_fail = True
+
+        if not early_fail:
+            exit_status = self._step5_compare(di_api, source_md5_output, dest_md5_output)
+
+        self._cleanup(di_api)
+
+        self.logger.info("USB-003 | do_test: complete")
+        return exit_status
+
+    def post_test(self):
+        self.logger.info(f"USB-003 | post_test: final result — {self.result}")
+        super().post_test()
+
+    # ------------------------------------------------------------------
+    # Sub-step helpers
+    # ------------------------------------------------------------------
+
+    def _step1_generate(self, di_api) -> int:
+        total_mb = self.FILE_SIZE_MB if self._is_windows else self.BLOCK_SIZE_MB * self.COUNT
+        self.logger.info(
+            f"USB-003 | Step 1: generating {total_mb} MB random file "
+            f"at {self.SOURCE_FILE}"
+        )
+        output, error, exit_status = di_api.generate_source_file()
+        self.logger.info(f"USB-003 | Step 1 stderr: {error}")
+
+        if exit_status != 0:
+            self.result.set_result(
+                False, f"Step 1 FAIL — generate command returned exit status {exit_status}"
+            )
+            self.logger.error(f"USB-003 | Step 1 error: {error}")
+        else:
+            self.logger.info("USB-003 | Step 1 PASS — source file generated")
+
+        return exit_status
+
+    def _step2_source_md5(self, di_api):
+        self.logger.info(f"USB-003 | Step 2: computing MD5 of {self.SOURCE_FILE}")
+        output, error, exit_status = di_api.compute_md5(self.SOURCE_FILE)
+        self.logger.info(f"USB-003 | Step 2 output: {output.strip()}")
+
+        if exit_status != 0:
+            self.result.set_result(
+                False, f"Step 2 FAIL — MD5 command returned exit status {exit_status}"
+            )
+            self.logger.error(f"USB-003 | Step 2 error: {error}")
+        else:
+            self.logger.info("USB-003 | Step 2 PASS — source MD5 captured")
+
+        return exit_status, output
+
+    def _step3_copy(self, di_api) -> int:
+        self.logger.info(
+            f"USB-003 | Step 3: copying {self.SOURCE_FILE} → "
+            f"{self.MOUNT_POINT}/{self.DEST_FILE}"
+        )
+        output, error, exit_status = di_api.mount_and_copy()
+
+        if exit_status != 0:
+            self.result.set_result(
+                False, f"Step 3 FAIL — copy command returned exit status {exit_status}"
+            )
+            self.logger.error(f"USB-003 | Step 3 error: {error}")
+        else:
+            self.logger.info("USB-003 | Step 3 PASS — file copied and flushed to device")
+
+        return exit_status
+
+    def _step4_drive_md5(self, di_api):
+        dest_path = (
+            f"{self.MOUNT_POINT}\\{self.DEST_FILE}"
+            if self._is_windows
+            else f"{self.MOUNT_POINT}/{self.DEST_FILE}"
+        )
+        self.logger.info(f"USB-003 | Step 4: verifying MD5 of {dest_path}")
+        output, error, exit_status = di_api.verify_md5_on_drive()
+        self.logger.info(f"USB-003 | Step 4 output: {output.strip()}")
+
+        if exit_status != 0:
+            self.result.set_result(
+                False, f"Step 4 FAIL — MD5 on drive returned exit status {exit_status}"
+            )
+            self.logger.error(f"USB-003 | Step 4 error: {error}")
+        else:
+            self.logger.info("USB-003 | Step 4 PASS — drive MD5 captured")
+
+        return exit_status, output
+
+    def _step5_compare(self, di_api, source_md5_output: str, dest_md5_output: str) -> int:
+        self.logger.info("USB-003 | Step 5: comparing MD5 checksums")
+
+        match, result_msg, source_hash, dest_hash = di_api.compare_checksums(
+            source_md5_output, dest_md5_output
+        )
+
+        self.logger.info(f"USB-003 | Step 5 — source : {source_hash}")
+        self.logger.info(f"USB-003 | Step 5 — dest   : {dest_hash}")
+        self.logger.info(f"USB-003 | Step 5 — result : {result_msg}")
+
+        self.result.set_result(match, f"USB-003 {result_msg}")
+
+        if not match:
+            self.logger.error(
+                f"USB-003 | Step 5 FAIL — checksums do not match: "
+                f"source={source_hash}  dest={dest_hash}"
+            )
+            return 1
+
+        self.logger.info("USB-003 | Step 5 PASS — PASS: Integrity OK")
+        return 0
+
+    def _cleanup(self, di_api):
+        self.logger.info("USB-003 | Cleanup: removing artefacts and unmounting")
+        output, error, exit_status = di_api.cleanup()
+
+        if exit_status != 0:
+            self.logger.warning(
+                f"USB-003 | Cleanup warning — exit status {exit_status}: {error}"
+            )
+        else:
+            self.logger.info("USB-003 | Cleanup complete")
+
+
+if __name__ == "__main__":
+    test = USBDataIntegrityMD5Test()
+    test.run()
