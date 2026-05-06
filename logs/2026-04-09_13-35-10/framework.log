@@ -1,0 +1,8 @@
+2026-04-09 13:35:10 | INFO | TestEngine | Pre-test phase
+2026-04-09 13:35:10 | INFO | SSHInterface | [CONNECTED] 192.168.7.2
+2026-04-09 13:35:10 | INFO | LocalTestInterface | Local interface ready
+2026-04-09 13:35:11 | INFO | BeaglePlatform | Detected OS: linux
+2026-04-09 13:35:11 | INFO | GpioOutputToggleTest | Executing pre-test for GpioOutputToggleTest
+2026-04-09 13:35:11 | INFO | GpioOutputToggleTest | Running GPIO Output Toggle Test
+2026-04-09 13:35:12 | INFO | GpioOutputToggleTest | GpioOutputToggleTest: PASS
+2026-04-09 13:35:12 | INFO | SSHInterface | [DISCONNECTED] 192.168.7.2

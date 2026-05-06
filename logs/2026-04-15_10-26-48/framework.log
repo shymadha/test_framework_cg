@@ -1,0 +1,9 @@
+2026-04-15 10:26:48 | INFO | TestEngine | Pre-test phase
+2026-04-15 10:26:48 | INFO | SSHInterface | [CONNECTED] 192.168.7.2
+2026-04-15 10:26:48 | INFO | LocalTestInterface | Local interface ready
+2026-04-15 10:26:52 | INFO | BeaglePlatform | Detected OS: linux
+2026-04-15 10:26:52 | INFO | GpioInterruptDetectTest | Executing pre-test for GpioInterruptDetectTest
+2026-04-15 10:26:52 | INFO | GpioInterruptDetectTest | Running GPIO Interrupt Detect Test
+2026-04-15 10:26:52 | INFO | GpioInterruptDetectTest | libgpiod interrupt detect failed, trying sysfs fallback...
+2026-04-15 10:26:52 | INFO | GpioInterruptDetectTest | GpioInterruptDetectTest: FAIL
+2026-04-15 10:26:52 | INFO | SSHInterface | [DISCONNECTED] 192.168.7.2

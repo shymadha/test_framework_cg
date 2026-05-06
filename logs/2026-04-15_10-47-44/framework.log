@@ -1,0 +1,15 @@
+2026-04-15 10:47:44 | INFO | TestEngine | Pre-test phase
+2026-04-15 10:47:45 | INFO | SSHInterface | [CONNECTED] 192.168.7.2
+2026-04-15 10:47:49 | INFO | BeaglePlatform | Detected OS: linux
+2026-04-15 10:47:49 | INFO | GpioInterruptDetectTest | Executing pre-test for GpioInterruptDetectTest
+2026-04-15 10:47:49 | INFO | GpioInterruptDetectTest | Running GPIO Interrupt Detect Test (libgpiod only)
+2026-04-15 10:47:49 | ERROR | TestEngine | ERROR in TestEngine: GpioUtilsAPI.interrupt_detect() got an unexpected keyword argument 'chip'
+Traceback (most recent call last):
+  File "/home/shyamala/shyamala/hamsa/test_framework_cg/test_framework_cg/framework/core/test_engine.py", line 78, in run
+    status = self.do_test()
+             ^^^^^^^^^^^^^^
+  File "/home/shyamala/shyamala/hamsa/test_framework_cg/test_framework_cg/framework/tests/gpio/gpio_interrupt_detect_test.py", line 28, in do_test
+    out, err, status = gpio_obj.interrupt_detect(self.gpio_pin, chip=self.chip)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: GpioUtilsAPI.interrupt_detect() got an unexpected keyword argument 'chip'
+2026-04-15 10:47:49 | INFO | SSHInterface | [DISCONNECTED] 192.168.7.2
