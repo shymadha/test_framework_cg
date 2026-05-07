@@ -196,7 +196,7 @@ class CPULinux(CPUBase):
     
 #############################################################################################################################
 
-    def error_check_cpu_frequency(self):
+    def cpu_error_check_frequency(self):
         """
         Retrieve CPU frequency information using `lscpu`.
 
