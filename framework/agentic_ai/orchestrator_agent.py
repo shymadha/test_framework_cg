@@ -64,21 +64,4 @@ builder.add_edge("analysis_agent", "reporting_agent")
 builder.add_edge("reporting_agent", END)
 orchestrator_graph = builder.compile()
 
-initial_state = {
-        "user_request": "run cpu frequency test on beagle platform using ssh",
-        "retry_count": 0,
-        "status": "INIT",
-    }
 
-for event in orchestrator_graph.stream(initial_state):
-    for node, state in event.items():
-        print("*"*50)
-        print(f"{node} execution completed")
-        print("*"*50)
-
-# result = orchestrator_graph.invoke(initial_state)
-
-# print("Root Cause Analysis")
-# from pprint import pprint
-
-# pprint(result["analysis_output"])

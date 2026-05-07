@@ -191,13 +191,21 @@ class ParseUserInput:
             parser = argparse.ArgumentParser(description="Test Runner CLI")
             parser.add_argument(
                 "--config",
-                required=True,
+                required=False,
                 help="Path to configuration JSON file"
             )
-            return parser.parse_args()
+            
+            args = parser.parse_args()
+
+            if not args.config:
+                args.config = "userinput/testbed.json"   # (also fixed path typo)
+
+            return args
+
         except Exception as e:
             self.logger.exception(f"Argument parsing failed: {e}")
             raise
+
 
     def get_platform_obj(self):
         """
