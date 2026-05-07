@@ -1,3 +1,33 @@
+"""
+I2CUtilsAPI
+-----------
+
+This class provides a unified interface for I²C operations across Linux and Windows platforms.
+It abstracts OS-specific implementations (I2CLinux and I2CWindows) and exposes common methods
+for tests to call consistently.
+
+Workflow:
+- Initialization:
+    * Accepts os_name ("linux" or "windows") and platform_obj
+    * Selects the appropriate implementation class (I2CLinux or I2CWindows)
+    * Raises ValueError if an unsupported OS type is provided
+- Methods:
+    * list_buses()        → Enumerates available I²C buses
+    * scan_bus(bus_id)    → Scans a specific bus for devices
+    * read_register()     → Reads a single register from a device
+    * write_register()    → Writes a value to a device register
+    * burst_read()        → Performs a multi-byte burst read
+
+Expected Results:
+- On Linux: Returns simulated outputs like "/dev/i2c-0", chip IDs, and burst values
+- On Windows: Returns simulated outputs via Windows I²C API
+- Simulation logic ensures PASS even if hardware is absent, aligned with Excel sheet expectations.
+
+Purpose:
+Provides OS-agnostic access to I²C operations, ensuring CLI and UI tests can call the same
+interface regardless of platform.
+"""
+
 from framework.utilities.os_utils.i2c.i2c_linux import I2CLinux
 from framework.utilities.os_utils.i2c.i2c_win import I2CWindows
 

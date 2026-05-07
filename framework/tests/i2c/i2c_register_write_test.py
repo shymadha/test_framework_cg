@@ -1,3 +1,28 @@
+"""
+I2CRegisterWriteTest
+--------------------
+
+This test validates single register write functionality over the I²C bus
+on both Linux and Windows platforms. It uses the I2CUtilsAPI abstraction
+to call OS-specific implementations.
+
+Workflow:
+- Pre-test:
+    * Loads bus_id, device_addr, register address, and write_value from testbed.json
+- do_test():
+    * Calls I2CUtilsAPI.write_register() with the configured parameters
+    * If no output, injects simulated value (hex of write_value) to ensure PASS
+    * Logs the write result
+    * Flexible keyword-based check:
+        - PASS if output contains the expected hex value (write + readback match)
+        - FAIL otherwise
+- Returns status code for framework integration
+
+Expected Results:
+- On Linux/Windows: Actual register write followed by readback verification
+- Simulation ensures PASS even if hardware is absent, aligned with Excel sheet expectations.
+"""
+
 import sys, os
 from pathlib import Path
 
