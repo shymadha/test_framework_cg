@@ -19,7 +19,7 @@ from core.testbed_utils import TestbedUtils
 from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
 
 
-class ErrorCpuFrequencyTest(BaseTest):
+class CpuErrorFrequencyTest(BaseTest):
     """
     Test case for validating CPU frequency retrieval on the target platform.
 
@@ -52,7 +52,7 @@ class ErrorCpuFrequencyTest(BaseTest):
             If any unexpected initialization error occurs.
         """
         super().pre_test()
-        self.logger.info("Executing pre-test for ErrorCpuFrequencyTest")
+        self.logger.info("Executing pre-test for CpuErrorFrequencyTest")
 
     def do_test(self):
         """
@@ -60,7 +60,7 @@ class ErrorCpuFrequencyTest(BaseTest):
 
         Steps:
           1. Initialize OSBaseAPI with the active platform object.
-          2. Invoke CPU frequency check via cpu_obj.cpu.error_check_cpu_frequency().
+          2. Invoke CPU frequency check via cpu_obj.cpu.cpu_error_check_frequency().
           3. Log the retrieved output.
           4. Mark the result as PASS if exit_status == 0, else FAIL.
 
@@ -77,7 +77,7 @@ class ErrorCpuFrequencyTest(BaseTest):
         self.logger.info("Running Error CPU Frequency Test")
         cpu_obj = OSBaseAPI(self.platform_obj)
 
-        output, error, exit_status = cpu_obj.cpu.error_check_cpu_frequency()
+        output, error, exit_status = cpu_obj.cpu.cpu_error_check_frequency()
 
         self.logger.info(f"Frequency Test Output: {output}")
 
@@ -94,10 +94,10 @@ class ErrorCpuFrequencyTest(BaseTest):
 
 if __name__ == "__main__":
     """
-    Entry point for standalone execution of the ErrorCpuFrequencyTest.
+    Entry point for standalone execution of the CpuErrorFrequencyTest.
 
     Creates a test instance and executes it using the TestEngine-managed
     lifecycle defined in BaseTest.
     """
-    test = ErrorCpuFrequencyTest()
+    test = CpuErrorFrequencyTest()
     test.run()

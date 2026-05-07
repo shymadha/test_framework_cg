@@ -195,7 +195,7 @@ class CPUWindows(CPUBase):
             return "", str(e), -1
         
 ##############################################################################################################################
-    def error_check_cpu_frequency(self):
+    def cpu_error_check_frequency(self):
         """
         Retrieve CPU frequency information using WMIC for error checking.
 

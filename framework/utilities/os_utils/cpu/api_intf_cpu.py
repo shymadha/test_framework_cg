@@ -127,7 +127,7 @@ class CpuUtilsAPI:
     
 ################################################################################################################################
 
-    def error_check_cpu_frequency(self):
+    def cpu_error_check_frequency(self):
         """
         Retrieve CPU frequency and clock scaling information.
 
@@ -136,4 +136,4 @@ class CpuUtilsAPI:
         tuple
             (output, error, status) containing frequency details.
         """
-        return self.__cpu_utils_obj.error_check_cpu_frequency()
+        return self.__cpu_utils_obj.cpu_error_check_frequency()
