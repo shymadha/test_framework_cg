@@ -50,8 +50,38 @@ def read_log_file(log_file):
 
 
 def clear_outputs():
-    return "", "", ""
+    return "", "", "", ""
 
+
+
+# -----------------------------------------
+# REPORT HELPERS
+# -----------------------------------------
+def get_latest_report_file(report_dir="reports"):
+    try:
+        files = [
+            os.path.join(report_dir, f)
+            for f in os.listdir(report_dir)
+            if f.endswith(".md")
+        ]
+
+        if not files:
+            return None
+
+        latest_file = sorted(files)[-1]
+        return latest_file
+
+    except Exception as e:
+        print(f"Error finding report file: {e}")
+        return None
+
+
+def read_report_file(report_path):
+    try:
+        with open(report_path, "r", encoding="utf-8", errors="ignore") as f:
+            return f.read()
+    except Exception as e:
+        return f"Failed to read report: {e}"
 
 # -----------------------------------------
 # ORCHESTRATOR WRAPPER
@@ -74,6 +104,7 @@ def run_orchestrator(user_request):
         execution_status = result.get("execution_status", "")
         matched_test = result.get("matched_test", "")
         log_dir = result.get("log_dir", None)
+        report_path = result.get("report_path", None)
 
         message = ""
 
@@ -93,7 +124,7 @@ def run_orchestrator(user_request):
         elif test_status == "VALID":
             message += f"🔧 Running test: {matched_test}"
 
-        return f"Status: {status}", message, log_dir, test_status
+        return f"Status: {status}", message, log_dir, test_status, report_path
 
     except Exception as e:
         return "ERROR", str(e), None, None
@@ -103,10 +134,12 @@ def run_orchestrator(user_request):
 # HANDLER
 # -----------------------------------------
 def handle_user_input(user_text):
-    status, message, log_dir, test_status = run_orchestrator(user_text)
+    status, message, log_dir, test_status, report_path = run_orchestrator(user_text)
 
+    # ✅ Logs handling
     if test_status in ["NOT_FOUND", "VAGUE"] or "ERROR" in status:
         logs = "⚠️ No execution logs generated for this request."
+        report_md = "⚠️ No report generated."
 
     else:
         log_file = (
@@ -117,7 +150,13 @@ def handle_user_input(user_text):
 
         logs = read_log_file(log_file) if log_file else "No log file found"
 
-    return status, message, logs
+        # ✅ Report handling
+        if not report_path:
+            report_path = get_latest_report_file()
+
+        report_md = read_report_file(report_path) if report_path else "No report found"
+
+    return status, message, logs, report_md
 
 
 # -----------------------------------------
@@ -207,26 +246,30 @@ with gr.Blocks(
     # ✅ Logs
     gr.Markdown("### 🧾 Execution Logs")
     log_output = gr.TextArea(lines=20, show_label=False)
+    
+    # ✅ Report Section
+    gr.Markdown("### 📄 Test Report")
+    report_output = gr.Markdown()
 
     # -----------------------------------------
     # EVENTS
     # -----------------------------------------
     user_input.submit(
-        fn=clear_outputs,
-        outputs=[status_output, result_output, log_output],
+    fn=clear_outputs,
+        outputs=[status_output, result_output, log_output, report_output],
     ).then(
         fn=handle_user_input,
         inputs=[user_input],
-        outputs=[status_output, result_output, log_output],
+        outputs=[status_output, result_output, log_output, report_output],
     )
 
     run_btn.click(
         fn=clear_outputs,
-        outputs=[status_output, result_output, log_output],
+        outputs=[status_output, result_output, log_output, report_output],
     ).then(
         fn=handle_user_input,
         inputs=[user_input],
-        outputs=[status_output, result_output, log_output],
+        outputs=[status_output, result_output, log_output, report_output],
     )
 
 

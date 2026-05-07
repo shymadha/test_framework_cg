@@ -65,7 +65,7 @@ def executor_agent(state):
         logger.info("Executing test")
         engine = test_instance.run()
         if engine is None:
-            raise RuntimeError("Likely an internal failure")
+            raise RuntimeError("Test Execution failed")
         print(f"Engine.result is {engine}")
 
         # 5. Post-test

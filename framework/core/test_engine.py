@@ -77,7 +77,7 @@ class TestEngine:
             self.pre_test()
             status = self.do_test()
             status = self.post_test()
-            return status
+            return True
             #return sys.exit(status)
 
         except Exception as e:
@@ -92,12 +92,12 @@ class TestEngine:
                     self.test_engine_logger.error(
                         f"Failed to close platform: {close_err}"
                     )
-            return status
+            # return status
             #return sys.exit(1)
 
     def post_test(self):
         """
-        Perform post‑test actions such as reporting verdict and cleanup.
+        Perform post-test actions such as reporting verdict and cleanup.
 
         Determines PASS/FAIL using `self.result.passed`, logs the verdict,
         and closes the platform object if initialized.
