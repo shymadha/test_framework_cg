@@ -193,3 +193,35 @@ class CPUWindows(CPUBase):
                 f"CPU Vendor Detection exception: {e}", exc_info=True
             )
             return "", str(e), -1
+        
+##############################################################################################################################
+    def error_check_cpu_frequency(self):
+        """
+        Retrieve CPU frequency information using WMIC for error checking.
+
+        Returns
+        -------
+        tuple
+            (output, error, exit_status):
+              - output : str -> Frequency details for error checking
+              - error : str  -> stderr output
+              - exit_status : int -> Command status code
+        Notes
+        -----
+        - Similar to check_cpu_frequency but intended for error scenario testing.
+        - Logs errors and exceptions for debugging.
+        """
+        try:
+            output, error, exit_status = self.platform_obj.exec_cmd(
+                "wmi cpu get name,CurrentClockSpeed,MaxClockSpeed", "ssh"
+            )
+            if exit_status != 0:
+                self.platform_obj.logger.error(
+                    f"Error CPU Frequency Check failed: {error}"
+                )
+            return output, error, exit_status
+        except Exception as e:
+            self.platform_obj.logger.error(
+                f"Error CPU Frequency Check exception: {e}", exc_info=True
+            )
+            return "", str(e), -1

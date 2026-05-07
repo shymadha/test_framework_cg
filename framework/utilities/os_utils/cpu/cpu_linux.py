@@ -193,3 +193,37 @@ class CPULinux(CPUBase):
                 f"CPU Vendor Detection exception: {e}", exc_info=True
             )
             return "", str(e), -1
+    
+#############################################################################################################################
+
+    def error_check_cpu_frequency(self):
+        """
+        Retrieve CPU frequency information using `lscpu`.
+
+        Returns
+        -------
+        tuple
+            (output, error, exit_status):
+              - `output` usually contains frequency data in MHz
+              - `error` contains stderr (if any)
+              - `exit_status` indicates success/failure
+
+        Notes
+        -----
+        - Uses grep to extract relevant lines.
+        """
+        try:
+            output, error, exit_status = self.platform_obj.exec_cmd(
+                "lscp | grep 'MHz'", "ssh"
+            )
+            if exit_status != 0:
+                self.platform_obj.logger.error(
+                    f"CPU Frequency Scaling Check failed: {error}"
+                )
+            return output, error, exit_status
+        except Exception as e:
+            self.logger.error(
+                f"CPU Frequency Scaling Check exception: {e}",
+                exc_info=True
+            )
+            return "", str(e), -1

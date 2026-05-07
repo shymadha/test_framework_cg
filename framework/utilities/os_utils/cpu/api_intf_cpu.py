@@ -113,7 +113,7 @@ class CpuUtilsAPI:
             (output, error, status) containing frequency details.
         """
         return self.__cpu_utils_obj.check_cpu_frequency()
-
+    
     def get_cpu_vendor(self):
         """
         Identify and return CPU vendor information.
@@ -124,3 +124,16 @@ class CpuUtilsAPI:
             (output, error, status) with vendor string and command status.
         """
         return self.__cpu_utils_obj.get_cpu_vendor()
+    
+################################################################################################################################
+
+    def error_check_cpu_frequency(self):
+        """
+        Retrieve CPU frequency and clock scaling information.
+
+        Returns
+        -------
+        tuple
+            (output, error, status) containing frequency details.
+        """
+        return self.__cpu_utils_obj.error_check_cpu_frequency()

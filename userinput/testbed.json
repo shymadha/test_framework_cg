@@ -11,7 +11,9 @@
           "port": 22,
           "timeout": 10
         }
-      ]
+      ],
+      "os_type": "linux",
+      "expected_status": "dongle detected"
     }
     
     
