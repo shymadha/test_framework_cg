@@ -58,28 +58,6 @@ class SleepTest(BaseTest):
         self.password = testbed_utils.get_value("password")
 
     def do_test(self):
-        """
-        Execute the S3 sleep test.
-
-        Steps:
-          1. Creates an OSBaseAPI instance tied to the platform object.
-          2. Calls pm.s3_sleep(password, wake_after) to initiate S3 sleep.
-          3. Logs stdout, stderr, and exit status for transparency.
-          4. Determines PASS/FAIL based on three scenarios:
-               - Success: exit_status is 0.
-               - Empty output: command succeeded but returned no useful result.
-               - Complete failure: command failed or returned an unexpected error.
-
-        Returns
-        -------
-        int
-            Exit status returned by the S3 sleep command.
-
-        Raises
-        ------
-        Exception
-            If pm.s3_sleep fails unexpectedly or returns invalid output.
-        """
         self.logger.info("Running Sleep Test")
 
         pm_obj = OSBaseAPI(self.platform_obj)
@@ -88,26 +66,23 @@ class SleepTest(BaseTest):
         )
 
         self.logger.info(f"Output : {output}")
-        self.logger.info(f"Error : {error}")
+        self.logger.info(f"Error  : {error}")
         self.logger.info(f"Exit Status : {exit_status}")
 
-        # Success scenario
-        if exit_status == 0:
+        # Combine stdout + stderr — rtcwake writes to stderr on some kernels
+        combined = (output + error).strip()
+
+        if exit_status == 0 and "wakeup from" in combined:
+            # Wakeup confirmation string present — sleep cycle completed
             self.result.set_result(True, "Sleep triggered successfully")
 
-        # Command succeeded but no useful result
-        elif exit_status == 0 and not output.strip():
-            self.result.set_result(False, "Sleep output was empty")
-            self.logger.error(
-                "No sleep information returned despite successful command execution"
-            )
+        elif exit_status == 0 and not combined:
+            self.result.set_result(False, "Sleep output was empty — no wakeup confirmation")
+            self.logger.error("No sleep information returned despite successful command execution")
 
-        # Complete failure or unexpected error
         else:
-            self.result.set_result(False, f"Sleep failed: {error}")
-            self.logger.error(
-                f"Sleep command failed with error: {error}"
-            )
+            self.result.set_result(False, f"Sleep failed: {error.strip()}")
+            self.logger.error(f"Sleep command failed with error: {error.strip()}")
 
         return exit_status
 
