@@ -1,0 +1,22 @@
+```text
+2026-04-02 12:08:21 | INFO | TestEngine | Pre-test phase
+2026-04-02 12:08:22 | INFO | SSHInterface | [CONNECTED] 10.204.209.63
+2026-04-02 12:08:22 | INFO | BeaglePlatform | Detected OS: windows
+2026-04-02 12:08:22 | INFO | StorageSequentialWriteTest | Executing pre-testquential Write Test - 100 MBTest
+2026-04-02 12:08:23 | INFO | StorageSequentialWriteTest | StorageSequentialWriteTest: PASS
+2026-04-02 12:08:23 | INFO | SSHInterface | [DISCONNECTED] 10.204.209.63
+
+2026-04-02 12:09:56 | INFO | TestEngine | Pre-test phase                    
+2026-04-02 12:09:59 | INFO | StorageSequentialReadTest | Running Storage Sequential Read Test on test_seq_write.bin
+2026-04-02 12:10:02 | INFO | StorageSequentialReadTest | StorageSequentialReadTest: PASS
+
+2026-04-02 12:10:04 | INFO | StorageRandomRwTest | Running Storage Random R/W Test - 100 MB
+2026-04-02 12:10:05 | INFO | StorageRandomRwTest | Random R/W Output: fio failed, using fallback...
+2026-04-02 12:10:05 | INFO | StorageRandomRwTest | StorageRandomRwTest: PASS
+
+2026-04-02 12:10:06 | INFO | StorageDataIntegrityTest | Running Storage Data Integrity Test on test_seq_write.bin
+2026-04-02 12:10:06 | INFO | StorageDataIntegrityTest | Data Integrity Check Output: Hash                                                 
+          C:\Users\capge\test_seq_write...
+2026-04-02 12:10:06 | INFO | StorageDataIntegrityTest | StorageDataIntegrityTest: PASS
+2026-04-02 12:10:06 | INFO | SSHInterface | [DISCONNECTED] 10.204.209.63
+```
