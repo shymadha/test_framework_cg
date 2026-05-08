@@ -50,7 +50,7 @@ from framework.tests.base_test import BaseTest
 from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
 
 
-class USBSerialFT232LoopbackTest(BaseTest):
+class UsbSerialFT232LoopbackTest(BaseTest):
     """
     USB-004: Serial FT232 Loopback test.
 

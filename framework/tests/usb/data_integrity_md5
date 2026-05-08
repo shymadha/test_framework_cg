@@ -48,7 +48,7 @@ from framework.tests.base_test import BaseTest
 from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
 
 
-class USBDataIntegrityMD5Test(BaseTest):
+class UsbDataIntegrityMD5Test(BaseTest):
     """
     USB-003: Data Integrity MD5 test.
 

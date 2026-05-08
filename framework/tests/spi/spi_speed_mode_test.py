@@ -12,7 +12,7 @@ from framework.tests.base_test import BaseTest
 from framework.utilities.os_utils.spi.api_intf_spi import SPIUtilsAPI
 
 
-class SPISpeedModeTest(BaseTest):
+class SpiSpeedModeTest(BaseTest):
     def do_test(self):
         self.logger.info("Running SPI Speed & Mode Test")
         spi_api = SPIUtilsAPI(self.platform_obj)
