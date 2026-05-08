@@ -70,9 +70,13 @@ def executor_agent(state):
 
         # 5. Post-test
         #engine.post_test()
+        
+        logger.info("=" * 50)
+        logger.info(f"END OF TEST: {test_name}")
+        logger.info("=" * 50)
 
         return {
-            "execution_status": "PASSED",
+            "execution_status": "PASSED" if engine == "PASS" else "FAILED",
             "execution_output": {
                 "domain": domain,
                 "test": test_name,
@@ -94,3 +98,4 @@ def executor_agent(state):
             },
             "status": "FAILED"
         }
+

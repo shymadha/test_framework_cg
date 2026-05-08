@@ -86,9 +86,51 @@ def read_report_file(report_path):
 # -----------------------------------------
 # ORCHESTRATOR WRAPPER
 # -----------------------------------------
+# def run_orchestrator(user_request):
+#     if not user_request or not user_request.strip():
+#         return "ERROR", "Please enter a test request", None, None
+
+#     try:
+#         result = orchestrator_graph.invoke(
+#             {
+#                 "user_request": user_request,
+#                 "retry_count": 0,
+#                 "status": "INIT",
+#             }
+#         )
+
+#         status = result.get("status", "UNKNOWN")
+#         test_status = result.get("test_status", "")
+#         execution_status = result.get("execution_status", "")
+#         matched_test = result.get("matched_test", "")
+#         log_dir = result.get("log_dir", None)
+#         report_path = result.get("report_path", None)
+
+#         message = ""
+
+#         # ✅ Verdict
+#         if execution_status == "PASSED":
+#             message += "✅ Test Verdict: PASSED\n\n"
+#         elif execution_status == "FAILED":
+#             message += "❌ Test Verdict: FAILED\n\n"
+
+#         # ✅ Test interpretation
+#         if test_status == "VAGUE":
+#             message += "⚠️ Your request is too vague.\nPlease specify the exact test."
+
+#         elif test_status == "NOT_FOUND":
+#             message += "❌ Requested test not found in framework."
+
+#         elif test_status == "VALID":
+#             message += f"🔧 Running test: {matched_test}"
+
+#         return f"Status: {status}", message, log_dir, test_status, report_path
+
+#     except Exception as e:
+#         return "ERROR", str(e), None, None,None
 def run_orchestrator(user_request):
     if not user_request or not user_request.strip():
-        return "ERROR", "Please enter a test request", None, None
+        return "ERROR", "Please enter a test request", None, None, None  # ✅ 5 values
 
     try:
         result = orchestrator_graph.invoke(
@@ -98,8 +140,8 @@ def run_orchestrator(user_request):
                 "status": "INIT",
             }
         )
-
         status = result.get("status", "UNKNOWN")
+        request_type = result.get("request_type", "execution")
         test_status = result.get("test_status", "")
         execution_status = result.get("execution_status", "")
         matched_test = result.get("matched_test", "")
@@ -108,13 +150,20 @@ def run_orchestrator(user_request):
 
         message = ""
 
-        # ✅ Verdict
+        # ✅ REPORT FLOW
+        if request_type == "report":
+            message = "📄 Report generated successfully"
+            return f"Status: {status}", message, log_dir, test_status, report_path
+
+        
+        # ✅ EXECUTION FLOW
         if execution_status == "PASSED":
             message += "✅ Test Verdict: PASSED\n\n"
         elif execution_status == "FAILED":
             message += "❌ Test Verdict: FAILED\n\n"
+        
+        
 
-        # ✅ Test interpretation
         if test_status == "VAGUE":
             message += "⚠️ Your request is too vague.\nPlease specify the exact test."
 
@@ -124,10 +173,11 @@ def run_orchestrator(user_request):
         elif test_status == "VALID":
             message += f"🔧 Running test: {matched_test}"
 
-        return f"Status: {status}", message, log_dir, test_status, report_path
+        # ✅ ALWAYS return 5 values
+        return f"Status: {status}", message, log_dir, test_status, None
 
     except Exception as e:
-        return "ERROR", str(e), None, None
+        return "ERROR", str(e), None, None, None  # ✅ 5 values
 
 
 # -----------------------------------------
@@ -163,7 +213,7 @@ def handle_user_input(user_text):
 # UI DESIGN
 # -----------------------------------------
 with gr.Blocks(
-    title="ASTER Framework",
+    title="AI Enabled Scalable Test Environment",
     theme=gr.themes.Soft(),
     css="""
     textarea {
@@ -198,8 +248,8 @@ with gr.Blocks(
 ) as demo:
 
     # ✅ HEADER
-    gr.Markdown("<div class='header'>🤖 ASTER Framework</div>")
-    gr.Markdown("<div class='subtext'>Run hardware validation tests using natural language</div>")
+    gr.Markdown("<div class='header'>🤖 AI Enabled Scalable Test Environment Framework</div>")
+    #gr.Markdown("<div class='subtext'>Run hardware validation tests using natural language</div>")
 
     # ✅ Examples
 #     gr.Markdown("""
@@ -227,7 +277,33 @@ with gr.Blocks(
 • run s3  
 • run restart  
 • run s5  
+
+### 🔌 I2C  
+• run i2c register read test  
+• run i2c device detection test  
+• run i2c register write test  
+• run i2c burst read test  
+
+### 📶 Bluetooth  
+• run bt data transfer test  
+• run bt device scan test  
+• run bt pair connect test  
+• run bt adapter detection test  
+• run bt enable poweron test  
+
+### 🔄 SPI  
+• run spi loopback test  
+• run spi data integrity test  
+• run spi speed mode test  
+• run spi device detection test  
+
+### 🔘 GPIO  
+• run gpio output toggle test  
+• run gpio led blink test  
+• run gpio interrupt detect test  
+• run gpio input read test  
 """)
+
 
     # ✅ Input row
     with gr.Row():

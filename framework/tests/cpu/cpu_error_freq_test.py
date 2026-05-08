@@ -19,7 +19,7 @@ from core.testbed_utils import TestbedUtils
 from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
 
 
-class CpuErrorFrequencyTest(BaseTest):
+class CpuErrorFreqTest(BaseTest):
     """
     Test case for validating CPU frequency retrieval on the target platform.
 
