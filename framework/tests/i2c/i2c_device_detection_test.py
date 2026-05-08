@@ -36,7 +36,7 @@ from framework.tests.base_test import BaseTest
 from core.testbed_utils import TestbedUtils
 from framework.utilities.os_utils.i2c.api_intf_i2c import I2CUtilsAPI
 
-class I2CDeviceDetectionTest(BaseTest):
+class I2cDeviceDetectionTest(BaseTest):
     def pre_test(self):
         super().pre_test()
         tb = TestbedUtils(self.user_input.args.config)

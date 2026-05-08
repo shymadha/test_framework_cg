@@ -12,7 +12,7 @@ from framework.tests.base_test import BaseTest
 from framework.utilities.os_utils.spi.api_intf_spi import SPIUtilsAPI
 
 
-class SPIDeviceDetectionTest(BaseTest):
+class SpiDeviceDetectionTest(BaseTest):
     def do_test(self):
         self.logger.info("Running SPI Device Detection Test")
         spi_api = SPIUtilsAPI(self.platform_obj)

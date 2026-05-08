@@ -49,7 +49,7 @@ from framework.tests.base_test import BaseTest
 from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
 
 
-class USBMassStorageRWTest(BaseTest):
+class UsbMassStorageRWTest(BaseTest):
     """
     USB-002: Mass Storage Read / Write test.
 

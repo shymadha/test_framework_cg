@@ -12,7 +12,7 @@ from framework.tests.base_test import BaseTest
 from framework.utilities.os_utils.spi.api_intf_spi import SPIUtilsAPI
 
 
-class SPIDataIntegrityTest(BaseTest):
+class SpiDataIntegrityTest(BaseTest):
     def do_test(self):
         self.logger.info("Running SPI Data Integrity Test")
         spi_api = SPIUtilsAPI(self.platform_obj)
