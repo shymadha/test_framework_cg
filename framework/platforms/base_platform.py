@@ -101,15 +101,24 @@ class BasePlatform:
         """
         Detect the operating system of the target platform.
 
-        The detection is performed in two stages:
-          1. Try `uname` via SSH (Linux/macOS).
-          2. If failed, try `ver` (Windows).
+        If os_type is already set (e.g. by a platform subclass such as
+        WindowsPlatform), detection is skipped and the pre-set value is
+        returned immediately.
+
+        Otherwise, detection is attempted in two stages via SSH:
+          1. Try ``uname`` (Linux/macOS).
+          2. If that fails, try ``ver`` (Windows).
 
         Returns
         -------
         str
             Detected OS type: "linux", "mac", "windows", or None if unknown.
         """
+        # Skip SSH-based detection when the subclass already knows the OS
+        if self.os_type is not None:
+            self.logger.info(f"OS already set: {self.os_type} — skipping detection")
+            return self.os_type
+
         output, error, status = self.exec_cmd("uname", "ssh")
         if status == 0:
             if "Linux" in output:

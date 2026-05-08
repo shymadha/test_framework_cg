@@ -3,6 +3,7 @@ import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from platforms.beagle_platform import BeaglePlatform
+from platforms.windows_platform import WindowsPlatform
 
 
 class PlatformFactory:
@@ -14,7 +15,8 @@ class PlatformFactory:
     based on the configuration provided in the testbed JSON.
 
     Supported platforms:
-      - "beagle" → BeaglePlatform
+      - "beagle"   → BeaglePlatform
+      - "windows"  → WindowsPlatform
 
     Additional platforms can be added by extending the factory logic.
     """
@@ -28,12 +30,13 @@ class PlatformFactory:
         ----------
         name : str
             Name of the platform as provided in the test configuration
-            (e.g., "beagle").
+            (e.g., "beagle", "windows").
 
         Returns
         -------
         BasePlatform
-            Instance of a concrete platform class (e.g., BeaglePlatform).
+            Instance of a concrete platform class (e.g., BeaglePlatform,
+            WindowsPlatform).
 
         Raises
         ------
@@ -43,5 +46,8 @@ class PlatformFactory:
         if name.lower() == "beagle":
             return BeaglePlatform()
 
+        elif name.lower() == "windows":
+            return WindowsPlatform()
+
         else:
-            raise ValueError("Unsupported platform")
+            raise ValueError(f"Unsupported platform: {name}")
