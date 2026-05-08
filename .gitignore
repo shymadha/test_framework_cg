@@ -1,0 +1,7 @@
+﻿logs/
+*.log
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+storage_output.log
