@@ -74,7 +74,7 @@ class PMLinux(PMBase):
             )
             return "", str(e), -1
 
-    def s3(self, password=None, duration=None):
+    def s3(self, password=None, wake_after=None):
         """
         Put the system into S3 (suspend‑to‑RAM) sleep mode using `rtcwake`.
 
@@ -82,8 +82,8 @@ class PMLinux(PMBase):
         ----------
         password : str, optional
             Password required for sudo authorization.
-        duration : int or str, optional
-            Custom sleep duration in seconds. If omitted, defaults to 10 seconds.
+        wake_after : int or str, optional
+            Number of seconds after which the system should wake up. If omitted, defaults to 10 seconds.
 
         Returns
         -------
@@ -98,7 +98,7 @@ class PMLinux(PMBase):
         """
         try:
             # Default sleep duration: 10 seconds if none provided
-            sleep_seconds = duration if duration else 10
+            sleep_seconds = wake_after if wake_after else 10
 
             cmd = (
                 f"echo '{password}' | sudo -S rtcwake -m mem "
