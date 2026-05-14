@@ -29,5 +29,5 @@ class SpiDataIntegrityTest(BaseTest):
 
 
 if __name__ == "__main__":
-    test = SPIDataIntegrityTest()
+    test = SpiDataIntegrityTest()
     test.run()

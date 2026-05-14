@@ -29,5 +29,5 @@ class SpiSpeedModeTest(BaseTest):
 
 
 if __name__ == "__main__":
-    test = SPISpeedModeTest()
+    test = SpiSpeedModeTest()
     test.run()

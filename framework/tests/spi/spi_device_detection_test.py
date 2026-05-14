@@ -29,5 +29,5 @@ class SpiDeviceDetectionTest(BaseTest):
 
 
 if __name__ == "__main__":
-    test = SPIDeviceDetectionTest()
+    test = SpiDeviceDetectionTest()
     test.run()

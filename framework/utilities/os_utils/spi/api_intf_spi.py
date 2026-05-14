@@ -3,29 +3,26 @@ from framework.utilities.os_utils.spi.spi_linux import SPILinux
 from framework.utilities.os_utils.spi.spi_windows import SPIWindows
 
 class SPIUtilsAPI:
+
     def __init__(self, platform_obj):
         self.platform_obj = platform_obj
-        self.os_type = platform_obj.get_os_type()
-        self.impl = SPILinux(self.platform_obj) if self.os_type == "linux" else SPIWindows(self.platform_obj)
+        self.os_type      = platform_obj.get_os_type()
 
         if self.os_type == "linux":
-            self.impl = SPILinux(self.platform_obj)    # ← pass platform_obj ✅
+            self.impl = SPILinux(self.platform_obj)
         elif self.os_type == "windows":
-            self.impl = SPIWindows(self.platform_obj)  # ← pass platform_obj ✅
+            self.impl = SPIWindows(self.platform_obj)
         else:
             raise ValueError(f"Unsupported OS: {self.os_type}")
 
     def device_detection(self):
-        return self.platform_obj.exec_cmd(self.impl.device_detection(), "ssh")
-
-    # def loopback(self):
-    #     return self.platform_obj.exec_cmd(self.impl.loopback(), "ssh")
+        return self.impl.device_detection()
 
     def speed_mode(self):
-        return self.platform_obj.exec_cmd(self.impl.speed_mode(), "ssh")
+        return self.impl.speed_mode()
 
     def data_integrity(self):
-        return self.platform_obj.exec_cmd(self.impl.data_integrity(), "ssh")
+        return self.impl.data_integrity()
 
     def loopback(self):
         """
