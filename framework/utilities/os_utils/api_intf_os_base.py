@@ -12,6 +12,8 @@ from framework.utilities.os_utils.usb.api_intf_usb import (
     USBDataIntegrityAPI,
     USBSerialFT232API,
 )
+from framework.utilities.os_utils.memory.api_intf_memory import MemoryUtilsAPI
+from framework.utilities.os_utils.storage.api_intf_storage import StorageUtilsAPI
 
 
 class OSBaseAPI:
@@ -76,6 +78,8 @@ class OSBaseAPI:
         self.cpu      = CpuUtilsAPI(self.os_name, self.platform_obj)
         self.ethernet = EthernetUtilsAPI(self.os_name, self.platform_obj)
         self.pm       = PmUtilsAPI(self.os_name, self.platform_obj)
+        self.memory   = MemoryUtilsAPI(self.os_name, self.platform_obj)
+        self.storage  = StorageUtilsAPI(self.os_name, self.platform_obj)
 
         # --- USB API components (USB-001 through USB-004) ---
         self.usb               = USBUtilsAPI(platform_obj)

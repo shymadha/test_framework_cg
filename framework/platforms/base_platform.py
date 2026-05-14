@@ -91,11 +91,13 @@ class BasePlatform:
         intf = None
         if interface_type:
             intf = self.test_interfaces.get(interface_type)
+        if not intf and self.test_interfaces:
+            intf = list(self.test_interfaces.values())[0]
 
         if intf:
             return intf.execute(command)
         else:
-            raise ValueError(f"Interface {interface_type} not found")
+            raise ValueError(f"No interface found to execute command")
 
     def detect_os(self):
         """
@@ -110,14 +112,15 @@ class BasePlatform:
         str
             Detected OS type: "linux", "mac", "windows", or None if unknown.
         """
-        output, error, status = self.exec_cmd("uname", "ssh")
+        intf_type = list(self.test_interfaces.keys())[0] if self.test_interfaces else "ssh"
+        output, error, status = self.exec_cmd("uname", intf_type)
         if status == 0:
             if "Linux" in output:
                 self.os_type = "linux"
             elif "Darwin" in output:
                 self.os_type = "mac"
         else:
-            output, error, status = self.exec_cmd("ver", "ssh")
+            output, error, status = self.exec_cmd("ver", intf_type)
             if "Windows" in output:
                 self.os_type = "windows"
 
