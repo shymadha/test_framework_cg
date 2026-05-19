@@ -11,10 +11,9 @@ Workflow:
     * Loads bus_id, device_addr, register, and burst_length from testbed.json
 - do_test():
     * Calls I2CUtilsAPI.burst_read() with the configured parameters
-    * If no output, injects simulated values ("0x60 0xff") to ensure PASS
     * Logs the burst read output
     * Flexible keyword-based check:
-        - PASS if output contains both "0x60" and "0xff"
+        - PASS if output is non-empty and contains numeric values
         - FAIL otherwise
 - Returns status code for framework integration
 
@@ -23,7 +22,7 @@ Expected Results:
 - Simulation ensures PASS even if hardware is absent, aligned with Excel sheet expectations.
 """
 
-import sys, os
+import sys, os, re
 from pathlib import Path
 
 # Ensure project root is on sys.path
@@ -41,27 +40,31 @@ class I2CBurstReadTest(BaseTest):
     def pre_test(self):
         super().pre_test()
         tb = TestbedUtils(self.user_input.args.config)
-        self.bus_id = tb.get_value("i2c_bus_id")
-        self.device_addr = tb.get_value("i2c_device_addr")
-        self.reg = tb.get_value("i2c_reg")
-        self.length = tb.get_value("burst_length")
+        tests = tb.get_value("tests")
+        burst_cfg = tests["I2CBurstReadTest"]
+
+        self.bus_id = burst_cfg["i2c_bus_id"]
+        self.device_addr = burst_cfg["i2c_device_addr"]
+        self.reg = burst_cfg["i2c_reg"]
+        self.length = burst_cfg["burst_length"]
 
     def do_test(self):
-        # FIXED: use get_os_type() instead of os_name
         i2c = I2CUtilsAPI(self.platform_obj.get_os_type(), self.platform_obj)
+        self.logger.info(
+            f"Burst read from - bus_id: {self.bus_id}, device_address: {self.device_addr}, register: {self.reg}, length: {self.length}"
+        )
         output, error, status = i2c.burst_read(self.bus_id, self.device_addr, self.reg, self.length)
 
-        # Simulation logic: inject expected values if output is empty
-        if not output.strip():
-            output = "0x60 0xff"  # inject expected burst values
-            status = 0
+        self.logger.info(f"Burst read output: {output}")
 
-        self.logger.info(f"Burst read: {output}")
-
-        if "0x60" in output.lower() and "0xff" in output.lower():
-            self.result.set_result(True, "Burst read matches expected (simulated if needed)")
+        # Validation: non-empty and contains numbers
+        if output.strip() and re.search(r"\d", output):
+            print("Valid burst output: not empty and contains numbers")
+            print(f"The burst data values are: {output}")
+            self.result.set_result(True, "Burst read successful")
         else:
-            self.result.set_result(False, "Burst read mismatch")
+            self.result.set_result(False, f"Burst read failed. Output: {output}, Error: {error}")
+
         return status
 
 if __name__ == "__main__":
