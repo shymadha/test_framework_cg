@@ -41,10 +41,17 @@ class I2cBurstReadTest(BaseTest):
     def pre_test(self):
         super().pre_test()
         tb = TestbedUtils(self.user_input.args.config)
-        self.bus_id = tb.get_value("i2c_bus_id")
-        self.device_addr = tb.get_value("i2c_device_addr")
-        self.reg = tb.get_value("i2c_reg")
-        self.length = tb.get_value("burst_length")
+        tests = tb.get_value("tests")
+        burst_read_cfg = tests["I2CRegisterReadTest"]
+
+        self.bus_id = burst_read_cfg["i2c_bus_id"]
+        self.device_addr = burst_read_cfg["i2c_device_addr"]
+        self.reg = burst_read_cfg["i2c_reg"]
+        self.length = burst_read_cfg["burst_length"]
+        # self.bus_id = tb.get_value("i2c_bus_id")
+        # self.device_addr = tb.get_value("i2c_device_addr")
+        # self.reg = tb.get_value("i2c_reg")
+        # self.length = tb.get_value("burst_length")
 
     def do_test(self):
         # FIXED: use get_os_type() instead of os_name
@@ -65,5 +72,5 @@ class I2cBurstReadTest(BaseTest):
         return status
 
 if __name__ == "__main__":
-    test = I2CBurstReadTest()
+    test = I2cBurstReadTest()
     test.run()
