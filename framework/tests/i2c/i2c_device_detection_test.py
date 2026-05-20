@@ -46,11 +46,6 @@ class I2cDeviceDetectionTest(BaseTest):
         i2c = I2CUtilsAPI(self.platform_obj.get_os_type(), self.platform_obj)
         output, error, status = i2c.list_buses()
 
-        # Simulation logic: inject expected device if missing
-        if not output.strip():
-            output = self.expected_device
-            status = 0
-
         self.logger.info(f"I2C buses: {output}")
 
         # Pass if expected device is present OR any bus exists
@@ -61,5 +56,5 @@ class I2cDeviceDetectionTest(BaseTest):
         return status
 
 if __name__ == "__main__":
-    test = I2CDeviceDetectionTest()
+    test = I2cDeviceDetectionTest()
     test.run()
