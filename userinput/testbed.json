@@ -4,19 +4,32 @@
       "platform": "beagle",
       "interfaces": [
         {
-          "type": "local",
-          "host": "127.0.0.1",
-          "username": "admin",
-          "password": "pwd",
+          "type": "ssh",
+          "host": "192.168.7.2",
+          "username": "debian",
+          "password": "temppwd1",
           "port": 22,
           "timeout": 10
         }
       ],
       "os_type": "linux",
       "expected_status": "dongle detected"
+    },
+    {
+      "platform": "windows",
+      "interfaces": [
+        {
+          "type": "ssh",
+          "host": "10.204.209.63",
+          "username": "capge",
+          "password": "a1b2c3d4e5",
+          "port": 22,
+          "timeout": 10
+        }
+      ],
+      "os_type": "windows",
+      "expected_status": "ok"
     }
-    
-    
   ],
   "tests": {
     "CpuDetectionTest": { "expected_vendor": "Intel" },
@@ -42,6 +55,12 @@
     "I2CDeviceDetectionTest": { "expected_device": "/dev/i2c-0" },
     "I2CRegisterReadTest": { "i2c_bus_id": 0, "i2c_device_addr": 52, "i2c_reg": 0 },
     "I2CRegisterWriteTest": { "i2c_bus_id": 0, "i2c_device_addr": 52, "i2c_reg": 255, "write_value": 96 },
-    "I2CBurstReadTest": { "i2c_bus_id": 0, "i2c_device_addr": 52, "i2c_reg": 0, "burst_length": 4 }
+    "I2CBurstReadTest": { "i2c_bus_id": 0, "i2c_device_addr": 52, "i2c_reg": 0, "burst_length": 4 },
+
+    "BTAdapterDetectionTest": { "expected_status": "dongle detected" },
+    "BTEnablePowerOnTest": {},
+    "BTDeviceScanTest": {},
+    "BTPairConnectTest": {},
+    "BTDataTransferTest": {}
   }
 }
