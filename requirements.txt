@@ -9,3 +9,18 @@ python-dotenv
 
 paramiko
 serial
+
+gradio
+jira
+drain3
+sentence-transformers
+chromadb
+regex
+ruff
+openpyxl
+numpy
+scikit-learn
+hdbscan
+numba
+rank_bm25
+pypdf

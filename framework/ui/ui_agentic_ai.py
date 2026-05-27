@@ -15,7 +15,7 @@ for parent in current.parents:
         break
 
 # ✅ Import orchestrator
-from agentic_ai.orchestrator_agent import orchestrator_graph
+from framework.agentic_ai.graph.orchestrator_agent import orchestrator_graph
 
 # -----------------------------------------
 # LOG HELPERS
