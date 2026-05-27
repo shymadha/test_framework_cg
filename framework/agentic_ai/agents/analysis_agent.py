@@ -30,10 +30,12 @@ def analysis_agent(state: OrchestratorState) -> OrchestratorState:
     ANALYZING state.
 
     Performs first-level RCA using framework.log.
-    LLM analyzes the log lines and stores RCA as a normal dict in analysis_output.
+    Retrieves relevant context from ChromaDB (device manual) using the log
+    content as a query, then passes both log + context to the LLM for RCA.
 
     This agent does NOT control orchestration flow.
     """
+    from framework.agentic_ai.vector_store.retrieval_memory import RetrievalPipeline
 
     state["status"] = "ANALYZING"
 
@@ -50,7 +52,7 @@ def analysis_agent(state: OrchestratorState) -> OrchestratorState:
     with log_file.open("r", encoding="utf-8", errors="ignore") as f:
         log_lines = f.readlines()
 
-    # fallback
+    # Fallback
     if not log_lines:
         state["analysis_output"] = {
             "root_cause": "Log file is empty. RCA cannot be performed.",
@@ -61,16 +63,51 @@ def analysis_agent(state: OrchestratorState) -> OrchestratorState:
         }
         return state
 
-    parser = JsonOutputParser()
+    log_text = "".join(log_lines)
+
+    # Memory: retrieve relevant context from ChromaDB
+    retrieval_context = ""
+    try:
+        retriever = RetrievalPipeline(
+            chroma_dir="./chroma_db",
+            collection_name="pdf_store",
+            top_k=5,
+        )
+        query_msg = llm.invoke(
+            [
+                HumanMessage(
+                    content=f"""You are a log analysis assistant. Read the log and extract: (1) what failed, 
+                        (2) the incorrect device slave address used. Reply in 2-3 sentences,
+                        be concise.":\n{log_text}
+                    """
+                )
+            ]
+        )
+        query = query_msg.content.strip()
+        results = retriever.similarity_search(query)
+        retrieval_context = "\n\n".join(r["content"] for r in results)
+    except Exception as e:
+        # Non-fatal: RCA still proceeds with log only
+        print(f"[analysis_agent] RAG retrieval failed, proceeding without context: {e}")
+
+    context_block = (
+        f"\n\nRelevant context retrieved from the device manual:\n{retrieval_context}"
+        if retrieval_context
+        else ""
+    )
 
     human_prompt = f"""
         Analyze the following log content and produce a structured RCA.
+        If relevant context from the device manual is provided, use it to identify
+        misconfigurations, incorrect addresses, or other discrepancies.
 
         Logs:
-        {log_lines}
+        {log_text}
+        {context_block}
     """
 
-    chain = llm | parser
+    parser = JsonOutputParser()
+    chain  = llm | parser
 
     try:
         analysis_output = chain.invoke(
@@ -97,3 +134,14 @@ def analysis_agent(state: OrchestratorState) -> OrchestratorState:
     }
 
     return state
+
+
+if __name__ == "__main__":
+
+    state = {
+        "artifact_path": "/Users/ishant162/Generative_AI/cg_test_frwk/test_framework_cg/data/log/framework.log",
+        "retry_count": 0,
+        "status": "INIT",
+    }
+    state = analysis_agent(state)
+    print(state['analysis_output'])

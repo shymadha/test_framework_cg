@@ -1,0 +1,13 @@
+2026-05-26 17:28:19 | INFO | ExecutorAgent | Initializing TestEngine
+2026-05-26 17:28:19 | INFO | ExecutorAgent | Selecting test: i2c / i2c_register_read_test
+2026-05-26 17:28:19 | INFO | ExecutorAgent | Executing test
+2026-05-26 17:28:19 | INFO | TestEngine | Pre-test phase
+2026-05-26 17:28:20 | INFO | SSHInterface | [CONNECTED] 192.168.7.2
+2026-05-26 17:28:25 | INFO | BeaglePlatform | Detected OS: linux
+2026-05-26 17:28:25 | INFO | I2cRegisterReadTest | read from - bus_id: 0,device_address:53,register: 0
+2026-05-26 17:28:25 | INFO | I2cRegisterReadTest | Register read: 
+2026-05-26 17:28:25 | INFO | I2cRegisterReadTest | I2cRegisterReadTest: FAIL
+2026-05-26 17:28:25 | INFO | SSHInterface | [DISCONNECTED] 192.168.7.2
+2026-05-26 17:28:25 | INFO | ExecutorAgent | ==================================================
+2026-05-26 17:28:25 | INFO | ExecutorAgent | END OF TEST: i2c_register_read_test
+2026-05-26 17:28:25 | INFO | ExecutorAgent | ==================================================

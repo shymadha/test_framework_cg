@@ -23,7 +23,7 @@ class RetrievalPipeline:
         self,
         chroma_dir: str = "./chroma_db",
         collection_name: str = "pdf_store",
-        top_k: int = 5,
+        top_k: int = 2,
     ):
         """
         Args:
@@ -100,7 +100,7 @@ class RetrievalPipeline:
             include=["documents"],
         )
         docs = results["documents"][0]
-        print(f"[Similarity] Retrieved {len(docs)} chunks.")
+        print(f"Memory Recalled {len(docs)} chunks.")
         return self._format(docs, label="similarity")
 
     def hybrid_search(self, query: str, bm25_weight: float = 0.5) -> List[dict]:
