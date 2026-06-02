@@ -68,6 +68,7 @@ class I2cRegisterWriteTest(BaseTest):
             self.result.set_result(True, "Write + Readback match (simulated if needed)")
         else:
             self.result.set_result(False, "Mismatch in readback")
+            self.logger.error(f"Register write: {error}")
         return status
 
               

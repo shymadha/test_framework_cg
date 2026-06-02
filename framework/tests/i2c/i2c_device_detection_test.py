@@ -53,6 +53,7 @@ class I2cDeviceDetectionTest(BaseTest):
             self.result.set_result(True, "I2C device detected (simulated if needed)")
         else:
             self.result.set_result(False, f"I2C device not detected. Output: {output}, Error: {error}")
+            self.logger.error(f"I2c detection: {error}")
         return status
 
 if __name__ == "__main__":

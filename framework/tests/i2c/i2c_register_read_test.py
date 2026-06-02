@@ -61,6 +61,7 @@ class I2cRegisterReadTest(BaseTest):
             self.result.set_result(True, "Correct Chip ID")
         else:
             self.result.set_result(False, "Wrong Chip ID")
+            self.logger.error(f"Register read: {error}")
             
         return status
         

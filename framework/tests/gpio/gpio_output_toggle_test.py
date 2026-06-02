@@ -47,43 +47,45 @@ class GpioOutputToggleTest(BaseTest):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config", help="Path to config file", required=False)
-    parser.add_argument("--ui", action="store_true", help="Run in UI mode")
-    args, unknown = parser.parse_known_args()
+    test = GpioOutputToggleTest()
+    test.run()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("--config", help="Path to config file", required=False)
+    # parser.add_argument("--ui", action="store_true", help="Run in UI mode")
+    # args, unknown = parser.parse_known_args()
 
-    if args.ui:
-        # Inject default config if none provided
-        if not args.config:
-            args.config = "userinput/testbed.json"
-        sys.argv = [sys.argv[0], "--config", args.config] + unknown
+    # if args.ui:
+    #     # Inject default config if none provided
+    #     if not args.config:
+    #         args.config = "userinput/testbed.json"
+    #     sys.argv = [sys.argv[0], "--config", args.config] + unknown
 
-        # 🔹 Start Flask server
-        app = Flask(__name__)
+    #     # 🔹 Start Flask server
+    #     app = Flask(__name__)
 
-        @app.route("/run/gpio_output_toggle")
-        def run_gpio_output_toggle():
-            test = GpioOutputToggleTest()
-            test.run()
-            verdict = "PASS" if test.result.passed else "FAIL"
-            return jsonify({
-                "test": test.result.name,
-                "verdict": verdict,
-                "message": test.result.message
-            })
+    #     @app.route("/run/gpio_output_toggle")
+    #     def run_gpio_output_toggle():
+    #         test = GpioOutputToggleTest()
+    #         test.run()
+    #         verdict = "PASS" if test.result.passed else "FAIL"
+    #         return jsonify({
+    #             "test": test.result.name,
+    #             "verdict": verdict,
+    #             "message": test.result.message
+    #         })
 
-        # 🔹 Open browser automatically
-        webbrowser.open("http://127.0.0.1:5000/run/gpio_output_toggle")
+    #     # 🔹 Open browser automatically
+    #     webbrowser.open("http://127.0.0.1:5000/run/gpio_output_toggle")
 
-        app.run(host="0.0.0.0", port=5000)
+    #     app.run(host="0.0.0.0", port=5000)
 
-    else:
-        # Normal CLI mode
-        if not args.config:
-            print("Error: --config is required in CLI mode")
-            sys.exit(1)
-        sys.argv = [sys.argv[0], "--config", args.config] + unknown
-        test = GpioOutputToggleTest()
-        test.run()
-        verdict = "PASS" if test.result.passed else "FAIL"
-        print(f"{test.result.name}: {verdict} - {test.result.message}")
+    # else:
+    #     # Normal CLI mode
+    #     if not args.config:
+    #         print("Error: --config is required in CLI mode")
+    #         sys.exit(1)
+    #     sys.argv = [sys.argv[0], "--config", args.config] + unknown
+    #     test = GpioOutputToggleTest()
+    #     test.run()
+    #     verdict = "PASS" if test.result.passed else "FAIL"
+    #     print(f"{test.result.name}: {verdict} - {test.result.message}")

@@ -1,104 +1,109 @@
-from typing import TypedDict, Optional, Dict, Literal
+from typing import TypedDict, Optional, Dict, Literal, List
 
 
 class OrchestratorState(TypedDict):
     # =====================================================
-    # External Input
+    # ✅ External Input
     # =====================================================
     user_request: str
-    """
-    Raw user / CI / API request.
-    Example:
-      - "run cpu monitor test on beagle platform using ssh"
-      - "analyze framework.log"
-      - "generate report for last execution"
-    """
+
 
     # =====================================================
-    # Classification (CLASSIFYING state)
+    # ✅ Classification (from interpreter_agent)
     # =====================================================
     request_type: Optional[
         Literal["execution", "rca", "report"]
     ]
-    """
-    Determined by the interpreter / intent router.
-    Controls DAG entry path.
-    """
 
     intent: Optional[
         Literal["execute", "analyze", "summarize"]
     ]
-    """
-    Normalized action intent.
-    """
+
 
     # =====================================================
-    # Execution metadata (EXECUTING state)
+    # ✅ 🧠 Natural Language Orchestration (NEW)
     # =====================================================
-    test_domain: Optional[str]        # e.g. cpu
-    test_name: Optional[str]          # e.g. cpu_monitor
-    platform: Optional[str]           # e.g. beagle
-    execution_method: Optional[str]   # e.g. ssh
+    execution_plan: Optional[List[str]]
+    """
+    Dynamically generated steps from user request.
+
+    Examples:
+    ["execute_test"]
+
+    ["execute_test", "run_rca_if_failed"]
+
+    ["execute_test", "run_rca_if_failed", "generate_report"]
+    """
+
+    current_step_index: Optional[int]
+    """
+    Pointer to track progress in execution_plan.
+    """
+
+    current_step: Optional[str]
+    """
+    Current step being executed in orchestration loop.
+    """
+
+
+    # =====================================================
+    # ✅ Execution metadata (EXECUTOR_AGENT)
+    # =====================================================
+    test_domain: Optional[str]
+    test_name: Optional[str]
+
+    platform: Optional[str]
+    execution_method: Optional[str]
 
     execution_status: Optional[
         Literal["PASSED", "FAILED"]
     ]
-    """
-    Set by executor_agent.
-    Drives PASS / FAIL conditional branching.
-    """
 
     execution_output: Optional[Dict]
-    """
-    Raw execution output: logs, metrics, exit codes, etc.
-    """
+
 
     # =====================================================
-    # Artifact resolution (ARTIFACT_READY state)
+    # ✅ Artifact Resolution
     # =====================================================
-    artifact_type: Optional[str]      # e.g. framework_log
-    artifact_path: Optional[str]      # Resolved filesystem path
+    artifact_type: Optional[str]
+    artifact_path: Optional[str]
+
 
     # =====================================================
-    # Analysis / RCA (ANALYZING state)
+    # ✅ RCA / Analysis Output
     # =====================================================
     analysis_output: Optional[Dict]
     """
-    RCA result:
-      - root_cause
-      - evidence
-      - confidence
+    Example:
+    {
+        "root_cause": "CPU spike",
+        "evidence": "...",
+        "confidence": 0.92
+    }
     """
 
+
     # =====================================================
-    # Reporting (REPORTING state)
+    # ✅ Reporting Output
     # =====================================================
     report_scope: Optional[
         Literal["last_execution", "explicit_timestamp"]
     ]
-    """
-    Used for direct report requests.
-    """
 
     timestamp: Optional[str]
-    """
-    Execution timestamp used for report scoping.
-    Example: "2026-04-17_15-29-13"
-    """
 
     report_path: Optional[str]
-    """
-    Final report artifact location.
-    """
+
 
     # =====================================================
-    # Lifecycle / Orchestration
+    # ✅ Control / Lifecycle
     # =====================================================
     retry_count: int
 
     status: Literal[
         "INIT",
         "CLASSIFYING",
+        "PLANNED",        # ✅ NEW (after LLM planning)
         "EXECUTING",
         "ARTIFACT_READY",
         "ANALYZING",
@@ -106,3 +111,4 @@ class OrchestratorState(TypedDict):
         "COMPLETED",
         "FAILED",
     ]
+    

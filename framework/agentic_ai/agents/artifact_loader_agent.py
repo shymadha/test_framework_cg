@@ -13,64 +13,40 @@ for parent in current.parents:
 from pathlib import Path
 from framework.agentic_ai.state.orchestrator_state import OrchestratorState
 
+from pathlib import Path
 
-def artifact_loader(state: OrchestratorState) -> OrchestratorState:
-    """
-    ARTIFACT_READY state.
-    Resolves and validates artifacts required for RCA.
-    Typically selects the latest framework.log unless a specific
-    timestamp/scope is already provided.
-    """
-    # Transition state
+def artifact_loader(state):
+
     state["status"] = "ARTIFACT_READY"
 
-    artifact_type = state.get("artifact_type")
-
-    # if artifact_type != "framework_log":
-    #     raise RuntimeError("artifact_loader called without framework_log requirement")
-
-    # Base logs directory (adjust if needed)
     logs_base = Path("logs")
 
     if not logs_base.exists():
-        raise FileNotFoundError("Logs directory does not exist")
+        raise FileNotFoundError("logs directory not found")
 
-    # -------------------------------------------------
-    # Resolve execution scope
-    # -------------------------------------------------
-    # 1. Explicit timestamp (from report/rca request)
-    # 2. Otherwise, latest execution directory
-    # -------------------------------------------------
+    # ✅ Get all timestamp folders
+    execution_dirs = [d for d in logs_base.iterdir() if d.is_dir()]
+    
+    if not execution_dirs:
+        raise FileNotFoundError("No execution folders found in logs/")
 
-    execution_dir: Path | None = None
+    # ✅ Pick latest (timestamp-based sort)
+    latest_dir = sorted(execution_dirs, key=lambda d: d.name)[-1]
+    
+    print(f"✅ Latest execution folder: {latest_dir}")
 
-    if state.get("timestamp"):
-        candidate = logs_base / state["timestamp"]
-        if not candidate.exists():
-            raise FileNotFoundError(
-                f"Execution folder not found for timestamp: {state['timestamp']}"
-            )
-        execution_dir = candidate
-    else:
-        # Pick latest execution folder (lexicographically sortable timestamps)
-        execution_dirs = [d for d in logs_base.iterdir() if d.is_dir()]
-        if not execution_dirs:
-            raise FileNotFoundError("No execution runs found")
-
-        execution_dir = sorted(execution_dirs, key=lambda d: d.name)[-1]
-        state["timestamp"] = execution_dir.name
-
-    # -------------------------------------------------
-    # Resolve framework.log
-    # -------------------------------------------------
-    framework_log = execution_dir / "framework.log"
+    framework_log = latest_dir / "framework.log"
 
     if not framework_log.exists():
-        raise FileNotFoundError(f"framework.log not found in {execution_dir}")
+        raise FileNotFoundError(f"{framework_log} not found")
 
-    # -------------------------------------------------
-    # Update orchestrator state
-    # -------------------------------------------------
-    state["artifact_path"] = str(framework_log)
+    # ✅ Return RELATIVE path (important)
+    #relative_path = framework_log.relative_to(Path.cwd())
+    relative_path = framework_log
+    print(f"✅ Using framework log: {relative_path}")
 
-    return state
+    return {
+        "artifact_path": str(relative_path),
+        "status": "ARTIFACT_READY"
+    }
+    

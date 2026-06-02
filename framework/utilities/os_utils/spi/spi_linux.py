@@ -25,16 +25,20 @@ class SPILinux(BaseSPI):
         tuple
             (output, error, exit_status)
         """
-        try:
-            cmd = "ls /dev/spidev*"
-            output, error, status = self.platform_obj.exec_cmd(cmd, "ssh")
-            return output.strip(), error.strip(), status
+        cmd = "ls /dev/spidev*"
+        return self.platform_obj.exec_cmd(cmd, "ssh")
+    
+        # try:
+        #     cmd = "ls /dev/spidev*"
+        #     return self.platform_obj.exec_cmd(cmd, "ssh")
+        #     # output, error, status = self.platform_obj.exec_cmd(cmd, "ssh")
+        #     # return output.strip(), error.strip(), status
 
-        except Exception as e:
-            self.platform_obj.logger.error(
-                f"SPI device detection error: {str(e)}", exc_info=True
-            )
-            return "", str(e), -1
+        # except Exception as e:
+        #     self.platform_obj.logger.error(
+        #         f"SPI device detection error: {str(e)}", exc_info=True
+        #     )
+        #     return "", str(e), -1
 
     def loopback(self):
         """

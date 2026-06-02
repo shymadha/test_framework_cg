@@ -1,9 +1,238 @@
 from typing import Dict
-from framework.agentic_ai.state.orchestrator_state import OrchestratorState
+import json
 import re
 from pathlib import Path
 
+from framework.agentic_ai.state.orchestrator_state import OrchestratorState
+
+# ✅ Import your helpers
+from framework.agentic_ai.llm.gen_engine_llm import GenEngineLLM
+
+# ✅ Initialize LLM
+llm = GenEngineLLM().get_llm_model()
+
+
+# =====================================================
+# ✅ ALLOWED STEPS (STRICT CONTROL)
+# =====================================================
+ALLOWED_STEPS = {
+    "execute_test",
+    "run_rca_if_failed",
+    "generate_report"
+}
+
+
+def sanitize_steps(steps):
+    sanitized = []
+
+    for step in steps:
+        if step in ALLOWED_STEPS:
+            sanitized.append(step)
+        else:
+            print(f"⚠️ Invalid step from LLM: {step}")
+
+    # ✅ fallback safety
+    if not sanitized:
+        sanitized = ["execute_test"]
+
+    return sanitized
+
+
+# =====================================================
+# ✅ FORMAT TEST CATALOG FOR LLM
+# =====================================================
+def format_test_catalog(test_map: dict) -> str:
+    lines = []
+    for domain, tests in test_map.items():
+        tests_str = ", ".join(tests)
+        lines.append(f"{domain}: [{tests_str}]")
+    return "\n".join(lines)
+
+
+# =====================================================
+# ✅ BUILD SYSTEM PROMPT
+# =====================================================
+def build_system_prompt(test_catalog: str) -> str:
+    return f"""
+You are an AI orchestration planner.
+
+AVAILABLE TESTS:
+{test_catalog}
+
+AVAILABLE STEPS (STRICT):
+- execute_test
+- run_rca_if_failed
+- generate_report
+
+CRITICAL RULES:
+1. ONLY use steps from AVAILABLE STEPS
+2. DO NOT generate natural language steps
+3. DO NOT invent step names
+4. ALWAYS return valid JSON
+
+5. If user wants to run test → include execute_test
+6. If failure/analysis mentioned → include run_rca_if_failed
+7. If report requested → include generate_report
+
+Output ONLY JSON:
+
+{{
+  "intent": "execute | analyze | summarize",
+  "request_type": "execution | rca | report",
+  "steps": [],
+  "test_domain": "",
+  "test_name": "",
+  "platform": "",
+  "execution_method": ""
+}}
+"""
+
+
+# =====================================================
+# ✅ SAFE JSON PARSER
+# =====================================================
+def safe_parse_json(content: str):
+    try:
+        return json.loads(content)
+    except:
+        match = re.search(r"\{.*\}", content, re.DOTALL)
+        if match:
+            return json.loads(match.group())
+        raise
+
+
+# =====================================================
+# ✅ RULE-BASED FALLBACK
+# =====================================================
+def rule_based_interpreter(state: OrchestratorState):
+
+    user_input = state["user_request"].lower()
+
+    if "report" in user_input:
+        return {
+            "intent": "summarize",
+            "request_type": "report",
+            "execution_plan": ["generate_report"],
+            "current_step_index": 0,
+            "status": "CLASSIFYING"
+        }
+
+    elif "analyze" in user_input or "fail" in user_input:
+        return {
+            "intent": "analyze",
+            "request_type": "rca",
+            "execution_plan": ["run_rca_if_failed"],
+            "current_step_index": 0,
+            "status": "CLASSIFYING"
+        }
+
+    else:
+        fallback_state = {}
+        extract_metadata_from_framework(user_input, fallback_state)
+
+        return {
+            "intent": "execute",
+            "request_type": "execution",
+            "execution_plan": ["execute_test"],
+            "current_step_index": 0,
+            "test_domain": fallback_state.get("test_domain"),
+            "test_name": fallback_state.get("test_name"),
+            "status": "CLASSIFYING"
+        }
+
+
+# =====================================================
+# ✅ MAIN INTERPRETER AGENT (NLO)
+# =====================================================
+def interpreter_agent(state: OrchestratorState) -> Dict:
+
+    user_input = state["user_request"]
+
+    try:
+        # ✅ Discover tests dynamically
+        test_map = discover_tests()
+        test_catalog = format_test_catalog(test_map)
+
+        # ✅ Build dynamic prompt
+        system_prompt = build_system_prompt(test_catalog)
+
+        # ✅ Call LLM
+        response = llm.invoke([
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_input}
+        ])
+
+        content = response.content
+
+        print("\n🧠 LLM RAW OUTPUT:", content)
+
+        plan = safe_parse_json(content)
+
+    except Exception as e:
+        print("⚠️ LLM failed, falling back:", str(e))
+        return rule_based_interpreter(state)
+
+    # =====================================================
+    # ✅ STEP SANITIZATION
+    # =====================================================
+    raw_steps = plan.get("steps", [])
+    steps = sanitize_steps(raw_steps)
+
+    # ✅ ensure execute_test exists
+    if plan.get("intent") == "execute" and "execute_test" not in steps:
+        print("⚠️ Injecting missing execute_test")
+        steps.insert(0, "execute_test")
+
+    print("✅ FINAL SANITIZED STEPS:", steps)
+
+    # =====================================================
+    # ✅ EXTRACT TEST METADATA
+    # =====================================================
+    test_domain = plan.get("test_domain")
+    test_name = plan.get("test_name")
+
+    if not test_domain or not test_name:
+        print("⚠️ LLM failed to map test → fallback matching")
+        fallback_state = {}
+        extract_metadata_from_framework(user_input.lower(), fallback_state)
+        test_domain = fallback_state.get("test_domain")
+        test_name = fallback_state.get("test_name")
+
+    # =====================================================
+    # ✅ VALIDATE EXECUTION METHOD
+    # =====================================================
+    method = plan.get("execution_method")
+    if method not in ["ssh", "local", None, ""]:
+        print("⚠️ Invalid execution_method:", method)
+        method = None
+
+    # =====================================================
+    # ✅ RETURN STATE UPDATE (LANGGRAPH STYLE)
+    # =====================================================
+    final_state = {
+        "intent": plan.get("intent"),
+        "request_type": plan.get("request_type"),
+        "execution_plan": steps,
+        "current_step_index": 0,
+        "test_domain": test_domain,
+        "test_name": test_name,
+        "platform": plan.get("platform"),
+        "execution_method": method,
+        "status": "CLASSIFYING"
+    }
+
+    print("✅ FINAL STATE RETURNED:", final_state)
+
+    return final_state
+
 from pathlib import Path
+
+def format_test_catalog(test_map: dict) -> str:
+    lines = []
+    for domain, tests in test_map.items():
+        tests_str = ", ".join(tests)
+        lines.append(f"{domain}: [{tests_str}]")
+    return "\n".join(lines)
 
 def discover_tests(test_root=None):
     if test_root is None:
@@ -79,78 +308,6 @@ def extract_metadata_from_framework(user_request: str, state: dict):
     state["test_name"] = test_name
 
     state = extract_platform_and_method(user_request.lower(), state)
-
-    return state
-
-
-def interpreter_agent(state: OrchestratorState) -> OrchestratorState:
-    """
-    CLASSIFYING state.
-    Converts raw user input into a normalized intent and request_type.
-    This node NEVER executes tests, analyzes logs, or generates reports.
-    """
-
-    user_input = state["user_request"].lower()
-
-    # -----------------------------------------
-    # Default classification
-    # -----------------------------------------
-    request_type = None
-    intent = None
-
-    # -----------------------------------------
-    # REPORT intent detection
-    # -----------------------------------------
-    if re.search(r"\breport\b", user_input):
-        request_type = "report"
-        intent = "summarize"
-
-        # Scope resolution (default behavior)
-        if "last" in user_input:
-            state["report_scope"] = "last_execution"
-        elif re.search(r"\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}", user_input):
-            ts_match = re.search(
-                r"\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}", user_input
-            )
-            state["report_scope"] = "explicit_timestamp"
-            state["timestamp"] = ts_match.group(0)
-        else:
-            state["report_scope"] = "last_execution"
-
-    # -----------------------------------------
-    # RCA / ANALYSIS intent detection
-    # -----------------------------------------
-    elif "framework.log" in user_input or "analyze" in user_input or "fail" in user_input:
-        request_type = "rca"
-        intent = "analyze"
-        state["artifact_type"] = "framework_log"
-
-    # -----------------------------------------
-    # EXECUTION intent detection (default)
-    # -----------------------------------------
-    else:
-        request_type = "execution"
-        intent = "execute"
-
-        extract_metadata_from_framework(user_input, state)
-        
-        # Extract test metadata (lightweight parsing)
-        # if "cpu" in user_input:
-        #     state["test_domain"] = "cpu"
-        #     state["test_name"] = "cpu_monitor"
-
-        # if "beagle" in user_input:
-        #     state["platform"] = "beagle"
-
-        # if "ssh" in user_input:
-        #     state["execution_method"] = "ssh"
-
-    # -----------------------------------------
-    # Update state for orchestrator routing
-    # -----------------------------------------
-    state["request_type"] = request_type
-    state["intent"] = intent
-    state["status"] = "CLASSIFYING"
 
     return state
 

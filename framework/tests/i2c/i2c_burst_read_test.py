@@ -119,6 +119,7 @@ class I2cBurstReadTest(BaseTest):
             self.result.set_result(True, "Burst read valid (hardware or simulated)")
         else:
             self.result.set_result(False, "Burst read mismatch")
+            self.logger.error(f"I2c burst read: {error}")
         return status
 
 if __name__ == "__main__":

@@ -178,7 +178,7 @@ class IngestionPipeline:
 
 if __name__ == "__main__":
     pipeline = IngestionPipeline(
-        pdf_path="/Users/ishant162/Generative_AI/cg_test_frwk/test_framework_cg/framework/data/log/spruh73q.pdf",
+        pdf_path="/home/shyamala/shyamala/code/test_framework_cg/framework/data/log/bbb_gpio_i2c_reference.pdf",
         chroma_dir="./chroma_db",
         collection_name="pdf_store",
         chunk_size=400,
