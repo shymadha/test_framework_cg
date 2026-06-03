@@ -3,7 +3,8 @@ Retrieval Pipeline
 """
 
 import os
-from typing import List
+from typing import List, Optional
+import uuid
 from openai import OpenAI
 from langchain_community.retrievers import BM25Retriever
 from langchain_core.documents import Document
@@ -97,11 +98,38 @@ class RetrievalPipeline:
         results = self.collection.query(
             query_embeddings=[query_embedding],
             n_results=self.top_k,
-            include=["documents"],
+            include=["documents", "metadatas", "distances"],
         )
+        
         docs = results["documents"][0]
+        metas = results["metadatas"][0]
+        dist = results["distances"][0]
+        
         print(f"Memory Recalled {len(docs)} chunks.")
-        return self._format(docs, label="similarity")
+        
+        formatted_results = []
+        for d, m, s in zip(docs, metas, dist):
+            formatted_results.append({
+                "strategy": "similarity",
+                "content": d,
+                "metadata": m,
+                "score": s
+            })
+        return formatted_results
+
+    def add_document(self, text: str, metadata: Optional[dict] = None):
+        """
+        Adds a single document to the collection.
+        """
+        embedding = self._embed(text)
+        doc_id = str(uuid.uuid4())
+        self.collection.add(
+            ids=[doc_id],
+            embeddings=[embedding],
+            documents=[text],
+            metadatas=[metadata] if metadata else None
+        )
+        print(f"Stored 1 document in collection '{self.collection.name}'.")
 
     def hybrid_search(self, query: str, bm25_weight: float = 0.5) -> List[dict]:
         """

@@ -3,3 +3,4 @@ logs
 reports
 .env
 chroma_db
+.DS_Store
