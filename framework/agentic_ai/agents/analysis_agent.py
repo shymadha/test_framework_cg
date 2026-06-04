@@ -77,8 +77,8 @@ def analysis_agent(state: OrchestratorState) -> dict:
         # Check if collection has any data before searching
         if hist_retriever.collection.count() > 0:
             hist_results = hist_retriever.similarity_search(query)
-            if hist_results and hist_results[0]["score"] < 0.2: 
-                print("✨ Exact historical match found (Confidence > 90%)!")
+            if hist_results: 
+                print("Exact historical match found")
                 return {
                     "analysis_output": json.loads(hist_results[0]["content"]),
                     "status": "ANALYZING"

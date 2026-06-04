@@ -2,6 +2,7 @@ import sys
 import os
 from pathlib import Path
 from framework.agentic_ai.llm.gen_engine_llm import GenEngineLLM
+from framework.agentic_ai.prompts.agent_prompts import report_agent_prompt
 from langchain_core.messages import HumanMessage
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -15,10 +16,6 @@ for parent in current.parents:
 from pathlib import Path
 from datetime import datetime
 from framework.agentic_ai.state.orchestrator_state import OrchestratorState
-
-from dotenv import load_dotenv
-load_dotenv()
-api_key = os.getenv("api_key")
 
 llm = GenEngineLLM().get_llm_model()
 
@@ -49,6 +46,8 @@ def report_agent(state: OrchestratorState) -> OrchestratorState:
     Always runs as the terminal convergence node.
     """
 
+    print("Generating report based on the RCA")
+
     state["status"] = "REPORTING"
     
     timestamp = state.get("timestamp")
@@ -58,48 +57,17 @@ def report_agent(state: OrchestratorState) -> OrchestratorState:
         state["timestamp"] = timestamp
 
     # Context for LLM
-    report_context = f"""
-        You are a test execution reporter. Create a concise professional markdown report.
+    report_context = report_agent_prompt.format(
+        timestamp=timestamp,
+        test_name=state.get("test_name", "N/A"),
+        test_domain=state.get("test_domain", "N/A"),
+        platform=state.get("platform", "N/A"),
+        execution_method=state.get("execution_method", "N/A"),
+        execution_status=state.get("execution_status", "N/A"),
+        execution_output=state.get("execution_output", "No output available."),
+        analysis_output=state.get("analysis_output", "No analysis available."),
+    )
 
-        Input:
-        - Timestamp: {timestamp}
-        - Test Name: {state.get("test_name", "N/A")}
-        - Test Domain: {state.get("test_domain", "N/A")}
-        - Platform: {state.get("platform", "N/A")}
-        - Method: {state.get("execution_method", "N/A")}
-        - Status: {state.get("execution_status", "N/A")}
-        - Execution Output: {state.get("execution_output", "No output available.")}
-        - Analysis Output: {state.get("analysis_output", "No analysis available.")}
-
-        Output structure:
-        # Test Execution Report
-
-        ## Summary
-        3-5 bullets: status, main issue, confidence score + reason.
-
-        ## Root Cause Evidence
-        | Root Cause | Key Evidence | Failure Stage |
-        |---|---|---|
-
-        ## Recommended Fix
-        2-4 actionable bullets.
-
-        ## Execution Details
-        Compact metadata table.
-
-        ## Analysis Details
-        | Finding | Evidence | Impact |
-        |---|---|---|
-        Max 3-5 findings.
-
-        ## Conclusion
-        2-3 sentences: final assessment, issue category, next step.
-
-        Rules: 
-        1. Be brief, avoid repetition, no "Symptom vs Cause", use N/A if unknown, quote only critical logs.
-        2. Incase of status=passed, don't include Root Cause Evidence & Recommended Fix.
-        
-    """
     response = llm.invoke([HumanMessage(content=report_context)]) 
     markdown_report = response.content  
     
@@ -112,5 +80,7 @@ def report_agent(state: OrchestratorState) -> OrchestratorState:
         f.write(markdown_report) 
     
     state["report_path"] = str(report_path) 
-    state["status"] = "COMPLETED" 
+    state["status"] = "COMPLETED"
+    
+    print("Report Generated")
     return state
