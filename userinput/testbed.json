@@ -53,7 +53,7 @@
     "SPIDataIntegrityTest": { "payload_size": 256, "hash_algorithm": "md5" },
 
     "I2CDeviceDetectionTest": { "expected_device": "/dev/i2c-0" },
-    "I2CRegisterReadTest": { "i2c_bus_id": 0, "i2c_device_addr": 52, "i2c_reg": 0 },
+    "I2CRegisterReadTest": { "i2c_bus_id": 0, "i2c_device_addr": 53, "i2c_reg": 0 },
     "I2CRegisterWriteTest": { "i2c_bus_id": 0, "i2c_device_addr": 52, "i2c_reg": 255, "write_value": 96 },
     "I2CBurstReadTest": { "i2c_bus_id": 0, "i2c_device_addr": 52, "i2c_reg": 0, "burst_length": 4 },
 

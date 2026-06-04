@@ -100,15 +100,6 @@ def report_agent(state: OrchestratorState) -> OrchestratorState:
         2. Incase of status=passed, don't include Root Cause Evidence & Recommended Fix.
         
     """
-
-    llm = ChatOpenAI(
-        model="openai.gpt-5.1",
-        base_url="https://openai.generative.engine.capgemini.com/v1",
-        api_key=api_key,
-        default_headers={
-            "x-api-key": api_key
-        },
-    )
     response = llm.invoke([HumanMessage(content=report_context)]) 
     markdown_report = response.content  
     

@@ -65,15 +65,16 @@ def analysis_agent(state: OrchestratorState) -> dict:
     if not log_text.strip():
         return {"status": "ANALYZING", "analysis_output": {"root_cause": "Empty log file"}}
 
+    hist_retriever = None
     print("Tier 1: Checking for exact historical match...")
-    hist_retriever = RetrievalPipeline(
-        chroma_dir="./chroma_db",
-        collection_name="analysis_store",
-        top_k=1,
-    )
     
-    query = f"Failure analysis for log: {log_text[:2000]}"
     try:
+        hist_retriever = RetrievalPipeline(
+            chroma_dir="./chroma_db",
+            collection_name="analysis_store",
+            top_k=1,
+        )
+        query = f"Failure analysis for log: {log_text[:2000]}"
         hist_results = hist_retriever.similarity_search(query)
         # Using distance score as proxy for confidence (lower distance = higher confidence)
         # 0.1 distance threshold roughly corresponds to >90% similarity
@@ -84,7 +85,7 @@ def analysis_agent(state: OrchestratorState) -> dict:
                 "status": "ANALYZING"
             }
     except Exception as e:
-        print(f"Historical search failed: {e}")
+        print(f"Historical search empty or failed: {e}")
 
     print("Tier 2: No exact match. Attempting context-aware analysis...")
     doc_retriever = RetrievalPipeline(
@@ -97,7 +98,7 @@ def analysis_agent(state: OrchestratorState) -> dict:
     try:
         # Search documentation using the log content
         doc_results = doc_retriever.similarity_search(log_text[:2000])
-        relevant_docs = [r for r in doc_results if r["score"] < 0.5]
+        relevant_docs = [r for r in doc_results]
         if relevant_docs:
             print(f"Found {len(relevant_docs)} relevant documentation snippets.")
             retrieval_context = "\n\n".join(r["content"] for r in relevant_docs)
