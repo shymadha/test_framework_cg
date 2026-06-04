@@ -39,7 +39,7 @@ class RetrievalPipeline:
             api_key=self.api_key,
         )
         self.chroma_client   = chromadb.PersistentClient(path=chroma_dir)
-        self.collection      = self.chroma_client.get_collection(name=collection_name)
+        self.collection      = self.chroma_client.get_or_create_collection(name=collection_name)
 
     def _embed(self, text: str) -> List[float]:
         """
