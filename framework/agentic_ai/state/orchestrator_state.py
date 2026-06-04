@@ -112,3 +112,10 @@ class OrchestratorState(TypedDict):
         "FAILED",
     ]
     
+    
+    #=====================================================
+    # ✅ Logging (NEW - REQUIRED)
+    # =====================================================
+    log_dir: Optional[str]
+
+    
