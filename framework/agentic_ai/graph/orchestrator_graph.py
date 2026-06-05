@@ -19,7 +19,7 @@ for parent in current.parents:
 from langgraph.graph import StateGraph, END
 from framework.agentic_ai.state.orchestrator_state import OrchestratorState
 
-from framework.agentic_ai.agents.interpreter_agent import interpreter_agent
+from framework.agentic_ai.agents.orchestrator_agent import interpreter_agent
 from framework.agentic_ai.agents.executor_agent import executor_agent
 from framework.agentic_ai.agents.artifact_loader_agent import artifact_loader
 from framework.agentic_ai.agents.analysis_agent import analysis_agent
