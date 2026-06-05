@@ -150,19 +150,6 @@ def executor_agent(state):
         print(f"Test domain is:{domain}")
         print(f"Test name is:{test_name}")
 
-        # logger.info(f"Selecting test: {domain} / {test_name}")
-
-        # TestClass = load_test_class(domain, test_name)
-        # test_instance = TestClass()
-
-        # logger.info("Executing test")
-
-        # result = test_instance.run()
-
-        # if result is None:
-        #     raise RuntimeError("Test Execution failed")
-
-        # print(f"Engine.result is {result}")
         response = agent.invoke({
             "messages": [
                 {
@@ -195,13 +182,7 @@ def executor_agent(state):
         print(f"status is {status}")
 
         logger.info(f"Execution result: {result}")
-        # # ✅ IMPORTANT: get log_dir from your engine
-        # log_dir = getattr(test_instance, "log_dir", None)
-
-        # # fallback if your framework uses engine
-        # if not log_dir and hasattr(engine, "log_dir"):
-        #     log_dir = engine.log_dir
-        
+                
         #✅ FIX THIS (IMPORTANT)
         logs_base = Path("logs")
 
@@ -245,82 +226,3 @@ def executor_agent(state):
 
 
 
-# def executor_agent(state):
-#     logger = setup_logger("ExecutorAgent")
-
-#     try:
-#         # ✅ Prevent duplicate execution
-#         if state.get("execution_done"):
-#             print("⚠️ Skipping duplicate execution")
-#             return state
-
-#         logger.info("Initializing TestEngine")
-#         engine = TestEngine()
-
-#         domain = state["test_domain"]
-#         test_name = state["test_name"]
-
-#         print(f"Test domain is:{domain}")
-#         print(f"Test name is:{test_name}")
-
-#         logger.info(f"Selecting test: {domain} / {test_name}")
-
-#         TestClass = load_test_class(domain, test_name)
-#         test_instance = TestClass()
-
-#         logger.info("Executing test")
-
-#         result = test_instance.run()
-
-#         if result is None:
-#             raise RuntimeError("Test Execution failed")
-
-#         print(f"Engine.result is {result}")
-
-#         # # ✅ IMPORTANT: get log_dir from your engine
-#         # log_dir = getattr(test_instance, "log_dir", None)
-
-#         # # fallback if your framework uses engine
-#         # if not log_dir and hasattr(engine, "log_dir"):
-#         #     log_dir = engine.log_dir
-        
-#         #✅ FIX THIS (IMPORTANT)
-#         logs_base = Path("logs")
-
-#         execution_dirs = [d for d in logs_base.iterdir() if d.is_dir()]
-#         latest_dir = sorted(execution_dirs, key=lambda d: d.name)[-1]
-
-#         log_dir = str(latest_dir)
-
-
-#         print("✅ LOG DIR:", log_dir)
-
-#         logger.info("=" * 50)
-#         logger.info(f"END OF TEST: {test_name}")
-#         logger.info("=" * 50)
-
-#         return {
-#             "execution_status": "PASSED" if result == "PASS" else "FAILED",
-#             "execution_output": {
-#                 "domain": domain,
-#                 "test": test_name,
-#                 "status": "SUCCESS"
-#             },
-#             "log_dir": log_dir,              # ✅ CRITICAL
-#             "execution_done": True,          # ✅ prevents duplicates
-#             "status": "DONE"
-#         }
-
-#     except Exception as e:
-#         logger.exception("Test execution failed")
-
-#         return {
-#             "execution_status": "FAILED",
-#             "execution_output": {
-#                 "status": "FAILED",
-#                 "error": str(e)
-#             },
-#             "log_dir": log_dir, #state.get("log_dir"),  # ✅ preserve if exists
-#             "execution_done": True,
-#             "status": "FAILED"
-#         }
