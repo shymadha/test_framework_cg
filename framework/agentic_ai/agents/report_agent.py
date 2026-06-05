@@ -1,9 +1,20 @@
+"""Reporting agent node"""
+
 import sys
 import os
+
 from pathlib import Path
+from datetime import datetime
+
 from framework.agentic_ai.llm.gen_engine_llm import GenEngineLLM
 from framework.agentic_ai.prompts.agent_prompts import report_agent_prompt
+from framework.agentic_ai.tools.jira_tool import jira_tools
+
 from langchain_core.messages import HumanMessage
+from langchain.agents import create_agent
+from langchain_core.messages import HumanMessage
+
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Add project root BEFORE any framework imports
@@ -38,7 +49,6 @@ def _resolve_latest_execution() -> str:
     latest = reports[0].stem.replace("report_", "")
     return latest
 
-
 def report_agent(state: OrchestratorState) -> OrchestratorState:
     """
     REPORTING state.
@@ -49,14 +59,15 @@ def report_agent(state: OrchestratorState) -> OrchestratorState:
     print("Generating report based on the RCA")
 
     state["status"] = "REPORTING"
-    
-    timestamp = state.get("timestamp")
-    if not timestamp:
-        # Default to latest execution if not already resolved
-        timestamp = _resolve_latest_execution()
-        state["timestamp"] = timestamp
 
-    # Context for LLM
+    timestamp = state.get("timestamp") or _resolve_latest_execution()
+    state["timestamp"] = timestamp
+
+    agent = create_agent(
+        model=llm,
+        tools=jira_tools,
+    )
+
     report_context = report_agent_prompt.format(
         timestamp=timestamp,
         test_name=state.get("test_name", "N/A"),
@@ -68,19 +79,35 @@ def report_agent(state: OrchestratorState) -> OrchestratorState:
         analysis_output=state.get("analysis_output", "No analysis available."),
     )
 
-    response = llm.invoke([HumanMessage(content=report_context)]) 
-    markdown_report = response.content  
-    
-    reports_dir = Path("reports") 
-    reports_dir.mkdir(exist_ok=True) 
-    report_path = reports_dir / f"report_{timestamp}.md" 
+    report_context += """
+    Instructions:
+    - Always generate a detailed markdown report.
+    - If execution_status is FAILED:
+        - You MUST call the tool `create_jira_ticket`
+        - summary = "Test Failure: <test_name>"
+        - description = full report
+        - testcase_name = test_name
+    - If execution_status is NOT FAILED:
+        - DO NOT call any tool
+    """
 
-    with report_path.open("w", encoding="utf-8") as f: 
-        f.write(f"<!-- Generated at: {datetime.utcnow().isoformat()} -->\n\n") 
-        f.write(markdown_report) 
-    
-    state["report_path"] = str(report_path) 
+    response = agent.invoke({
+        "messages": [HumanMessage(content=report_context)]
+    })
+
+    final_output = response["messages"][-1].content
+
+    # Save report
+    reports_dir = Path("reports")
+    reports_dir.mkdir(exist_ok=True)
+    report_path = reports_dir / f"report_{timestamp}.md"
+
+    with report_path.open("w", encoding="utf-8") as f:
+        f.write(f"<!-- Generated at: {datetime.utcnow().isoformat()} -->\n\n")
+        f.write(final_output)
+
+    state["report_path"] = str(report_path)
     state["status"] = "COMPLETED"
-    
+
     print("Report Generated")
     return state
