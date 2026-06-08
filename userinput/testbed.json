@@ -39,7 +39,7 @@
     "EthernetLinkStatusTest": { "expected_status": "up" },
     "EthernetConnectivityTest": { "target_host": "google.com" },
 
-    "GpioOutputToggleTest": { "gpio_pin": 23, "chip": "gpiochip0" },
+    "GpioOutputToggleTest": { "gpio_pin": 233, "chip": "gpiochip0" },
     "GpioInputReadTest": { "gpio_pin": 21, "chip": "gpiochip0" },
     "GpioLedBlinkTest": { "led_name": "beaglebone:green:usr0" },
     "GpioInterruptDetectTest_usr0": { "gpio_pin": 21, "chip": "gpiochip1" },

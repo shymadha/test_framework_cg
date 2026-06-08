@@ -89,11 +89,6 @@ report_agent_prompt = """
     ## Execution Details
     Compact metadata table.
 
-    ## Analysis Details
-    | Finding | Evidence | Impact |
-    |---|---|---|
-    Max 1-2 findings.
-
     ## Conclusion
     1-2 sentences: final assessment, issue category, next step.
 
