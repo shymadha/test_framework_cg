@@ -40,6 +40,7 @@ def run_test_tool(domain: str, test_name: str, log_dir: str) -> dict:
     Returns:
         dict: execution result
     """
+    print("Executor Agent Calling Test Engine Tool")
 
     logger = setup_logger("TestEngine", log_dir)
 

@@ -46,16 +46,16 @@ def route_by_execution_status(state: OrchestratorState):
 
 
 builder = StateGraph(OrchestratorState)
-builder.add_node("classifying_intent", orchestrator_agent)
+builder.add_node("orchestrator_agent", orchestrator_agent)
 builder.add_node("executor_agent", executor_agent)
 builder.add_node("artifact_ready", artifact_loader)
 builder.add_node("analysis_agent", analysis_agent)
 builder.add_node("reporting_agent", report_agent)
 builder.add_node("reporting_artificact_ready", reporting_placeholder)
 
-builder.set_entry_point("classifying_intent")
+builder.set_entry_point("orchestrator_agent")
 builder.add_conditional_edges(
-    "classifying_intent",
+    "orchestrator_agent",
     route_by_intent,
     {
         "execute": "executor_agent",

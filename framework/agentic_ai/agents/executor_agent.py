@@ -88,7 +88,6 @@ def executor_agent(state):
         print(f"Test domain is:{domain}")
         print(f"Test name is:{test_name}")
 
-        print("Executor Agent Calling Test Engine Tool")
         response = agent.invoke(
             {
                 "messages": [
@@ -128,7 +127,7 @@ def executor_agent(state):
         logger.info("=" * 50)
 
         return {
-            "execution_status": "PASSED" if status == "PASS" else "FAILED",
+            "execution_status": "PASSED" if status == "SUCCESS" else "FAILED",
             "execution_output": {
                 "domain": domain,
                 "test": test_name,

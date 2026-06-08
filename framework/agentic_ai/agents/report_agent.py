@@ -54,7 +54,7 @@ def report_agent(state: OrchestratorState) -> OrchestratorState:
     REPORTING state.
     Generates a final report for the resolved execution scope.
     """
-    print("Reportin Agent Generating report based on the RCA")
+    print("Report Agent Generating report based on the RCA")
 
     state["status"] = "REPORTING"
     timestamp = state.get("timestamp") or _resolve_latest_execution()
@@ -106,6 +106,7 @@ def report_agent(state: OrchestratorState) -> OrchestratorState:
             break
 
     if jira_ticket_info:
+        print("Report Agent Calling Jira Tool")
         jira_report_section = "\n\n## Jira Ticket Details\n\n"
         jira_report_section += (
             f"- **Ticket ID:** {jira_ticket_info.get('ticket_id', 'N/A')}\n"
