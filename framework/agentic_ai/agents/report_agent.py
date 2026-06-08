@@ -7,13 +7,13 @@ import json
 from pathlib import Path
 from datetime import datetime
 
+from framework.agentic_ai.state.orchestrator_state import OrchestratorState
 from framework.agentic_ai.llm.gen_engine_llm import GenEngineLLM
 from framework.agentic_ai.prompts.agent_prompts import report_agent_prompt
 from framework.agentic_ai.tools.jira_tool import jira_tools
 
 from langchain_core.messages import HumanMessage
 from langchain.agents import create_agent
-from langchain_core.messages import HumanMessage
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -24,9 +24,6 @@ for parent in current.parents:
     if (parent / "framework").exists():
         sys.path.insert(0, str(parent))
         break
-from pathlib import Path
-from datetime import datetime
-from framework.agentic_ai.state.orchestrator_state import OrchestratorState
 
 llm = GenEngineLLM().get_llm_model()
 
@@ -34,7 +31,9 @@ def _resolve_latest_execution() -> str:
     reports_dir = Path("reports")
 
     if not reports_dir.exists():
-        raise RuntimeError("No reports directory found; cannot resolve latest execution")
+        raise RuntimeError(
+            "No reports directory found; cannot resolve latest execution"
+        )
 
     reports = sorted(
         reports_dir.glob("report_*.json"),
@@ -49,22 +48,23 @@ def _resolve_latest_execution() -> str:
     latest = reports[0].stem.replace("report_", "")
     return latest
 
+
 def report_agent(state: OrchestratorState) -> OrchestratorState:
     """
     REPORTING state.
     Generates a final report for the resolved execution scope.
     """
-    print("Generating report based on the RCA")
-    
+    print("Reportin Agent Generating report based on the RCA")
+
     state["status"] = "REPORTING"
     timestamp = state.get("timestamp") or _resolve_latest_execution()
     state["timestamp"] = timestamp
-    
+
     agent = create_agent(
         model=llm,
         tools=jira_tools,
     )
-    
+
     report_context = report_agent_prompt.format(
         timestamp=timestamp,
         test_name=state.get("test_name", "N/A"),
@@ -75,7 +75,7 @@ def report_agent(state: OrchestratorState) -> OrchestratorState:
         execution_output=state.get("execution_output", "No output available."),
         analysis_output=state.get("analysis_output", "No analysis available."),
     )
-    
+
     report_context += """
         Instructions:
         - Always generate a detailed markdown report.
@@ -95,7 +95,7 @@ def report_agent(state: OrchestratorState) -> OrchestratorState:
     )
 
     final_output = response["messages"][-1].content
-    messages = response['messages']
+    messages = response["messages"]
     jira_ticket_info = None
 
     # Check intermediate steps for Jira ticket creation
@@ -106,11 +106,19 @@ def report_agent(state: OrchestratorState) -> OrchestratorState:
             break
 
     if jira_ticket_info:
-        jira_report_section = f"\n\n## Jira Ticket Details\n\n"
-        jira_report_section += f"- **Ticket ID:** {jira_ticket_info.get("ticket_id", "N/A")}\n"
-        jira_report_section += f"- **Summary:** {jira_ticket_info.get("summary", "N/A")}\n"
-        jira_report_section += f"- **Status:** {jira_ticket_info.get("status", "N/A")}\n"
-        jira_report_section += f"- **Test Case:** {jira_ticket_info.get("testcase", "N/A")}\n"
+        jira_report_section = "\n\n## Jira Ticket Details\n\n"
+        jira_report_section += (
+            f"- **Ticket ID:** {jira_ticket_info.get('ticket_id', 'N/A')}\n"
+        )
+        jira_report_section += (
+            f"- **Summary:** {jira_ticket_info.get('summary', 'N/A')}\n"
+        )
+        jira_report_section += (
+            f"- **Status:** {jira_ticket_info.get('status', 'N/A')}\n"
+        )
+        jira_report_section += (
+            f"- **Test Case:** {jira_ticket_info.get('testcase', 'N/A')}\n"
+        )
         final_output = final_output + jira_report_section
 
     # Save report

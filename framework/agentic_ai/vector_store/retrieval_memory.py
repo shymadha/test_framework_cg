@@ -32,14 +32,16 @@ class RetrievalPipeline:
             collection_name: Collection to retrieve from.
             top_k:           Number of results to return per retrieval.
         """
-        self.top_k           = top_k
-        self.api_key         = os.getenv("API_KEY")
-        self.openai_client   = OpenAI(
+        self.top_k = top_k
+        self.api_key = os.getenv("API_KEY")
+        self.openai_client = OpenAI(
             base_url="https://openai.generative.engine.capgemini.com/v1",
             api_key=self.api_key,
         )
-        self.chroma_client   = chromadb.PersistentClient(path=chroma_dir)
-        self.collection      = self.chroma_client.get_or_create_collection(name=collection_name)
+        self.chroma_client = chromadb.PersistentClient(path=chroma_dir)
+        self.collection = self.chroma_client.get_or_create_collection(
+            name=collection_name
+        )
 
     def _embed(self, text: str) -> List[float]:
         """
@@ -100,21 +102,18 @@ class RetrievalPipeline:
             n_results=self.top_k,
             include=["documents", "metadatas", "distances"],
         )
-        
+
         docs = results["documents"][0]
         metas = results["metadatas"][0]
         dist = results["distances"][0]
-        
+
         print(f"Memory Recalled {len(docs)} chunks.")
-        
+
         formatted_results = []
         for d, m, s in zip(docs, metas, dist):
-            formatted_results.append({
-                "strategy": "similarity",
-                "content": d,
-                "metadata": m,
-                "score": s
-            })
+            formatted_results.append(
+                {"strategy": "similarity", "content": d, "metadata": m, "score": s}
+            )
         return formatted_results
 
     def add_document(self, text: str, metadata: Optional[dict] = None):
@@ -127,7 +126,7 @@ class RetrievalPipeline:
             ids=[doc_id],
             embeddings=[embedding],
             documents=[text],
-            metadatas=[metadata] if metadata else None
+            metadatas=[metadata] if metadata else None,
         )
         print(f"Stored 1 document in collection '{self.collection.name}'.")
 
@@ -148,7 +147,7 @@ class RetrievalPipeline:
 
         # Dense retrieval (fetch 2x top_k to have enough candidates for fusion)
         query_embedding = self._embed(query)
-        vector_results  = self.collection.query(
+        vector_results = self.collection.query(
             query_embeddings=[query_embedding],
             n_results=self.top_k * 2,
             include=["documents"],
@@ -156,10 +155,10 @@ class RetrievalPipeline:
         vector_docs = vector_results["documents"][0]
 
         # Sparse retrieval via BM25
-        all_documents   = self._get_all_documents()
-        bm25_retriever  = BM25Retriever.from_documents(all_documents)
+        all_documents = self._get_all_documents()
+        bm25_retriever = BM25Retriever.from_documents(all_documents)
         bm25_retriever.k = self.top_k * 2
-        bm25_docs       = [doc.page_content for doc in bm25_retriever.invoke(query)]
+        bm25_docs = [doc.page_content for doc in bm25_retriever.invoke(query)]
 
         # Reciprocal Rank Fusion
         rrf_scores: dict[str, float] = {}
@@ -173,7 +172,7 @@ class RetrievalPipeline:
         fused = sorted(rrf_scores, key=rrf_scores.get, reverse=True)[: self.top_k]
         print(f"[Hybrid] Retrieved {len(fused)} chunks after RRF fusion.")
         return self._format(fused, label="hybrid")
-     
+
 
 if __name__ == "__main__":
     pipeline = RetrievalPipeline(

@@ -68,7 +68,6 @@ class IngestionPipeline:
             name=self.collection_name
         )
 
-
     def extract_text(self) -> List[str]:
         """
         Extracts text from each page of the PDF using PyPDFLoader.
@@ -87,7 +86,6 @@ class IngestionPipeline:
         print(f"Extracted text from {len(texts)} pages.")
         return texts
 
-
     def chunk_texts(self, texts: List[str]) -> List[str]:
         """
         Splits page texts into smaller overlapping chunks.
@@ -102,10 +100,9 @@ class IngestionPipeline:
         print("Chunking....")
 
         full_text = "\n".join(texts)
-        chunks    = self.splitter.split_text(full_text)
+        chunks = self.splitter.split_text(full_text)
         print(f"Created {len(chunks)} chunks.")
         return chunks
-
 
     def embed(self, text: str) -> List[float]:
         """
@@ -169,8 +166,8 @@ class IngestionPipeline:
         Runs the full ingestion pipeline:
         extract -> chunk -> embed -> store.
         """
-        texts      = self.extract_text()
-        chunks     = self.chunk_texts(texts)
+        texts = self.extract_text()
+        chunks = self.chunk_texts(texts)
         embeddings = self.embed_chunks(chunks)
         self.store(chunks, embeddings)
         print("Ingestion complete.")
@@ -183,6 +180,6 @@ if __name__ == "__main__":
         collection_name="pdf_store",
         chunk_size=400,
         chunk_overlap=40,
-        page_slice=slice(-200, None),   # last 200 pages; pass None for all pages
+        page_slice=slice(-200, None),  # last 200 pages; pass None for all pages
     )
     pipeline.run()

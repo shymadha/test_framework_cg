@@ -3,9 +3,13 @@
 import sys
 import json
 from pathlib import Path
-from dotenv import load_dotenv
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.output_parsers import JsonOutputParser
+
+from framework.agentic_ai.llm.gen_engine_llm import GenEngineLLM
+from framework.agentic_ai.prompts.agent_prompts import rca_agent_prompt
+from framework.agentic_ai.state.orchestrator_state import OrchestratorState
+from framework.agentic_ai.vector_store.retrieval_memory import RetrievalPipeline
 
 current = Path(__file__).resolve()
 for parent in current.parents:
@@ -13,12 +17,6 @@ for parent in current.parents:
         sys.path.insert(0, str(parent))
         break
 
-from framework.agentic_ai.llm.gen_engine_llm import GenEngineLLM
-from framework.agentic_ai.prompts.agent_prompts import rca_agent_prompt
-from framework.agentic_ai.state.orchestrator_state import OrchestratorState
-from framework.agentic_ai.vector_store.retrieval_memory import RetrievalPipeline
-
-load_dotenv()
 llm = GenEngineLLM().get_llm_model()
 
 
@@ -43,9 +41,9 @@ def analysis_agent(state: OrchestratorState) -> dict:
                 "confidence": 1.0,
                 "summary": "Test passed successfully",
                 "evidence": [],
-                "recommended_fix": "No action needed"
+                "recommended_fix": "No action needed",
             },
-            "status": "ANALYZING"
+            "status": "ANALYZING",
         }
 
     artifact_path = state.get("artifact_path")
@@ -63,7 +61,10 @@ def analysis_agent(state: OrchestratorState) -> dict:
         log_text = f.read()
 
     if not log_text.strip():
-        return {"status": "ANALYZING", "analysis_output": {"root_cause": "Empty log file"}}
+        return {
+            "status": "ANALYZING",
+            "analysis_output": {"root_cause": "Empty log file"},
+        }
 
     print("Tier 1: Checking for exact historical match...")
     hist_retriever = RetrievalPipeline(
@@ -71,17 +72,17 @@ def analysis_agent(state: OrchestratorState) -> dict:
         collection_name="analysis_store",
         top_k=1,
     )
-    
+
     query = f"Failure analysis for log: {log_text[:2000]}"
     try:
         # Check if collection has any data before searching
         if hist_retriever.collection.count() > 0:
             hist_results = hist_retriever.similarity_search(query)
-            if hist_results: 
+            if hist_results:
                 print("Exact historical match found")
                 return {
                     "analysis_output": json.loads(hist_results[0]["content"]),
-                    "status": "ANALYZING"
+                    "status": "ANALYZING",
                 }
         else:
             print("historical store is empty. Skipping Tier 1.")
@@ -94,7 +95,7 @@ def analysis_agent(state: OrchestratorState) -> dict:
         collection_name="pdf_store",
         top_k=2,
     )
-    
+
     retrieval_context = ""
     try:
         if doc_retriever.collection.count() > 0:
@@ -131,10 +132,12 @@ def analysis_agent(state: OrchestratorState) -> dict:
     chain = llm | parser
 
     try:
-        analysis_output = chain.invoke([
-            SystemMessage(content=rca_agent_prompt),
-            HumanMessage(content=human_prompt)
-        ])
+        analysis_output = chain.invoke(
+            [
+                SystemMessage(content=rca_agent_prompt),
+                HumanMessage(content=human_prompt),
+            ]
+        )
     except Exception as e:
         print(f"LLM RCA failed: {e}")
         analysis_output = {"root_cause": "LLM analysis failed", "summary": str(e)}
@@ -146,13 +149,10 @@ def analysis_agent(state: OrchestratorState) -> dict:
             metadata={
                 "type": "historical_analysis",
                 "test_name": state.get("test_name", "unknown"),
-                "has_context": bool(retrieval_context)
-            }
+                "has_context": bool(retrieval_context),
+            },
         )
     except Exception as e:
         print(f"Commit failed: {e}")
 
-    return {
-        "analysis_output": analysis_output,
-        "status": "ANALYZING"
-    }
+    return {"analysis_output": analysis_output, "status": "ANALYZING"}

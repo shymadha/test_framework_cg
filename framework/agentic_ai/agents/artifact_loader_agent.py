@@ -1,6 +1,11 @@
+"""Artifact Loader Module"""
+
 import sys
 import os
 from pathlib import Path
+
+from framework.agentic_ai.state.orchestrator_state import OrchestratorState
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Add project root BEFORE any framework imports
@@ -10,8 +15,6 @@ for parent in current.parents:
     if (parent / "framework").exists():
         sys.path.insert(0, str(parent))
         break
-from pathlib import Path
-from framework.agentic_ai.state.orchestrator_state import OrchestratorState
 
 
 def artifact_loader(state: OrchestratorState) -> OrchestratorState:
@@ -23,11 +26,6 @@ def artifact_loader(state: OrchestratorState) -> OrchestratorState:
     """
     # Transition state
     state["status"] = "ARTIFACT_READY"
-
-    artifact_type = state.get("artifact_type")
-
-    # if artifact_type != "framework_log":
-    #     raise RuntimeError("artifact_loader called without framework_log requirement")
 
     # Base logs directory (adjust if needed)
     logs_base = Path("logs")

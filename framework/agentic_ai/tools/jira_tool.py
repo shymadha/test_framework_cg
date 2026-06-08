@@ -6,7 +6,7 @@ from langchain_core.tools import tool
 
 load_dotenv()
 
-JIRA_INSTANCE_URL = os.environ['JIRA_INSTANCE_URL']
+JIRA_INSTANCE_URL = os.environ["JIRA_INSTANCE_URL"]
 JIRA_USERNAME = os.environ["JIRA_USERNAME"]
 JIRA_API_TOKEN = os.environ["JIRA_API_TOKEN"]
 JIRA_PROJECT_KEY = os.environ["JIRA_PROJECT_KEY"]
@@ -28,8 +28,14 @@ def create_jira_ticket(
         Dictionary with ticket information
     """
     from jira import JIRA
+
     jira = JIRA(server=JIRA_INSTANCE_URL, basic_auth=(JIRA_USERNAME, JIRA_API_TOKEN))
-    issue = jira.create_issue(project=JIRA_PROJECT_KEY, summary=summary, description=description, issuetype={'name': 'Task'})
+    issue = jira.create_issue(
+        project=JIRA_PROJECT_KEY,
+        summary=summary,
+        description=description,
+        issuetype={"name": "Task"},
+    )
 
     print(f"Jira ticket created: {issue.key}")
 
