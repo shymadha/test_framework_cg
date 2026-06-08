@@ -24,3 +24,4 @@ hdbscan
 numba
 rank_bm25
 pypdf
+flask
