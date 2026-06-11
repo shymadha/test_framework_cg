@@ -23,7 +23,7 @@ class RetrievalPipeline:
     def __init__(
         self,
         chroma_dir: str = "./chroma_db",
-        collection_name: str = "pdf_store",
+        collection_name: str = "doc_store",
         top_k: int = 2,
     ):
         """
@@ -177,7 +177,7 @@ class RetrievalPipeline:
 if __name__ == "__main__":
     pipeline = RetrievalPipeline(
         chroma_dir="./chroma_db",
-        collection_name="pdf_store",
+        collection_name="doc_store",
         top_k=5,
     )
 

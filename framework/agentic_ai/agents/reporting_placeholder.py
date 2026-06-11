@@ -10,11 +10,6 @@ def reporting_placeholder(state):
     # Transition state
     state["status"] = "ARTIFACT_READY"
 
-    artifact_type = state.get("artifact_type")
-
-    # if artifact_type != "framework_log":
-    #     raise RuntimeError("artifact_loader called without framework_log requirement")
-
     # Base logs directory (adjust if needed)
     logs_base = Path("logs")
 

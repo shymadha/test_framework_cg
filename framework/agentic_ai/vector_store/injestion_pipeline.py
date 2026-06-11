@@ -30,7 +30,7 @@ class IngestionPipeline:
         self,
         pdf_path: str,
         chroma_dir: str = "./chroma_db",
-        collection_name: str = "pdf_store",
+        collection_name: str = "doc_store",
         chunk_size: int = 1000,
         chunk_overlap: int = 150,
         page_slice: slice = None,
@@ -175,11 +175,11 @@ class IngestionPipeline:
 
 if __name__ == "__main__":
     pipeline = IngestionPipeline(
-        pdf_path="/Users/ishant162/Generative_AI/cg_test_frwk/test_framework_cg/framework/data/log/spruh73q.pdf",
+        pdf_path="/home/veluser/Ishant_ai_poc_work/test_framework_cg/data/bbb_gpio_i2c_reference.pdf",
         chroma_dir="./chroma_db",
-        collection_name="pdf_store",
-        chunk_size=400,
-        chunk_overlap=40,
-        page_slice=slice(-200, None),  # last 200 pages; pass None for all pages
+        collection_name="doc_store",
+        chunk_size=200,
+        chunk_overlap=10,
+        # page_slice=slice(-200, None),  # last 200 pages; pass None for all pages
     )
     pipeline.run()

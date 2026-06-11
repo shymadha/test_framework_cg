@@ -107,9 +107,10 @@ def setup_logger(logger_name: str,
     logger.setLevel(logging.DEBUG)  # capture everything; handlers will filter
     logger.propagate = False        # prevent passing up to root, avoiding duplicates
 
-    # If handlers already attached, return as-is (idempotent)
     if logger.handlers:
-        return logger
+        for handler in logger.handlers[:]:
+            handler.close()
+            logger.removeHandler(handler)
 
     log_dir = _get_run_log_dir()
     framework_log_path = os.path.join(log_dir, "framework.log")

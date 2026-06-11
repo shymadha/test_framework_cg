@@ -25,8 +25,8 @@ def analysis_agent(state: OrchestratorState) -> dict:
     Performs Root Cause Analysis (RCA) on test log.
 
     Tiered Logic:
-    1. Check historical analysis (analysis_store): If exact match (confidence > 90%), return it.
-    2. Fallback to context-aware analysis (pdf_store): Retrieve documentation context and perform RCA.
+    1. Check historical analysis (historical_store): If exact match (confidence > 90%), return it.
+    2. Fallback to context-aware analysis (doc_store): Retrieve documentation context and perform RCA.
     3. Final fallback: If context is not relevant, perform fresh LLM analysis on logs only.
     4. Commit fresh results back to historical analysis store.
     """
@@ -69,7 +69,7 @@ def analysis_agent(state: OrchestratorState) -> dict:
     print("Tier 1: Checking for exact historical match...")
     hist_retriever = RetrievalPipeline(
         chroma_dir="./chroma_db",
-        collection_name="analysis_store",
+        collection_name="historical_store",
         top_k=1,
     )
 
@@ -92,7 +92,7 @@ def analysis_agent(state: OrchestratorState) -> dict:
     print("Tier 2: No exact match. Attempting context-aware analysis...")
     doc_retriever = RetrievalPipeline(
         chroma_dir="./chroma_db",
-        collection_name="pdf_store",
+        collection_name="doc_store",
         top_k=2,
     )
 
@@ -105,7 +105,7 @@ def analysis_agent(state: OrchestratorState) -> dict:
                 print(f"Found {len(relevant_docs)} relevant documentation snippets.")
                 retrieval_context = "\n\n".join(r["content"] for r in relevant_docs)
         else:
-            print("pdf_store is empty. Skipping Tier 2.")
+            print("doc_store is empty. Skipping Tier 2.")
     except Exception as e:
         print(f"Documentation retrieval failed: {e}")
 

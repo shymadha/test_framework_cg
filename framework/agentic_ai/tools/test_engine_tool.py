@@ -3,7 +3,6 @@
 import importlib
 
 from langchain.tools import tool
-from framework.core.logger import setup_logger
 
 
 def snake_to_camel(snake: str) -> str:
@@ -42,14 +41,8 @@ def run_test_tool(domain: str, test_name: str, log_dir: str) -> dict:
     """
     print("Executor Agent Calling Test Engine Tool")
 
-    logger = setup_logger("TestEngine", log_dir)
-
-    logger.info(f"Selecting test: {domain} / {test_name}")
-
     TestClass = load_test_class(domain, test_name)
     test_instance = TestClass()
-
-    logger.info("Executing test")
 
     result = test_instance.run()
 
