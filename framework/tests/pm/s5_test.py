@@ -17,7 +17,7 @@ from core.testbed_utils import TestbedUtils
 from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
 
 
-class s5Test(BaseTest):
+class S5Test(BaseTest):
     """
     Test case to validate system s5 functionality on the target platform.
 
@@ -151,9 +151,9 @@ class s5Test(BaseTest):
 
 if __name__ == "__main__":
     """
-    Entry point to execute s5Test as a standalone script.
+    Entry point to execute S5Test as a standalone script.
 
     Creates an instance of s5Test and runs it via BaseTest/TestEngine workflow.
     """
-    test = s5Test()
+    test = S5Test()
     test.run()

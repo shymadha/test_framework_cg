@@ -19,7 +19,7 @@ from framework.tests.base_test import BaseTest
 from framework.utilities.os_utils.pm.pm_base import PMBase
 
 
-class SleepTest(BaseTest):
+class S3Test(BaseTest):
     """
     Test case to validate system sleep (S3) behavior on the target platform.
 
@@ -89,9 +89,9 @@ class SleepTest(BaseTest):
 
 if __name__ == "__main__":
     """
-    Entry point to execute the SleepTest as a standalone script.
+    Entry point to execute the S5Test as a standalone script.
 
-    Instantiates SleepTest and runs it using the BaseTest/TestEngine workflow.
+    Instantiates S3Test and runs it using the BaseTest/TestEngine workflow.
     """
-    test = SleepTest()
+    test = S3Test()
     test.run()
