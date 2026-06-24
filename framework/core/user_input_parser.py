@@ -2,15 +2,15 @@
 
 import argparse
 import json
-from pathlib import Path
-import sys
 import os
 import re
+import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from platforms.platform_factory import PlatformFactory
-from interfaces.interface_factory import InterfaceFactory
 from core.logger import setup_logger
+from interfaces.interface_factory import InterfaceFactory
+from platforms.platform_factory import PlatformFactory
 
 
 class ParseUserInput:

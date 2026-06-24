@@ -2,6 +2,7 @@
 from framework.utilities.os_utils.spi.spi_linux import SPILinux
 from framework.utilities.os_utils.spi.spi_windows import SPIWindows
 
+
 class SPIUtilsAPI:
 
     def __init__(self, platform_obj):

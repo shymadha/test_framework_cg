@@ -76,7 +76,7 @@
 #     test.run()
 
 
-import sys, os
+import sys
 from pathlib import Path
 
 # Ensure project root is on sys.path
@@ -86,9 +86,11 @@ for parent in current.parents:
         sys.path.insert(0, str(parent))
         break
 
-from framework.tests.base_test import BaseTest
 from core.testbed_utils import TestbedUtils
+
+from framework.tests.base_test import BaseTest
 from framework.utilities.os_utils.i2c.api_intf_i2c import I2CUtilsAPI
+
 
 class I2cBurstReadTest(BaseTest):
     def pre_test(self):

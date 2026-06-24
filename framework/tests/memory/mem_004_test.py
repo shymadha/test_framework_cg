@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 from pathlib import Path
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -13,6 +13,7 @@ for parent in current.parents:
 
 from framework.tests.base_test import BaseTest
 from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
+
 
 class Mem004Test(BaseTest):
     def pre_test(self):

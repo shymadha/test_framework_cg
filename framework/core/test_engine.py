@@ -1,11 +1,10 @@
 import os
 import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import importlib
-from framework.core.user_input_parser import ParseUserInput
 from core.logger import setup_logger
-from framework.interfaces.interface_factory import InterfaceFactory
-from framework.platforms.platform_factory import PlatformFactory
+
+from framework.core.user_input_parser import ParseUserInput
 
 
 class TestEngine:

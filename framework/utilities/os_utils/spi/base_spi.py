@@ -1,6 +1,7 @@
 # framework/utilities/os_utils/spi/base_spi.py
 from abc import ABC, abstractmethod
 
+
 class BaseSPI(ABC):
     """
     Abstract base class for SPI utilities.

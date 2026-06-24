@@ -1,11 +1,11 @@
 # api_intf_cpu.py
-import sys
 import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from framework.utilities.os_utils.cpu.cpu_win import CPUWindows
 from framework.utilities.os_utils.cpu.cpu_linux import CPULinux
+from framework.utilities.os_utils.cpu.cpu_win import CPUWindows
 
 
 class CpuUtilsAPI:

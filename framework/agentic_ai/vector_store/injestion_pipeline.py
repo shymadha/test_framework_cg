@@ -9,10 +9,10 @@ import uuid
 from typing import List
 
 import chromadb
-from openai import OpenAI
+from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
 

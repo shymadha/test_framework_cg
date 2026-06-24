@@ -22,6 +22,7 @@ to abstract OS differences and unify test execution across CLI and UI.
 
 from framework.utilities.os_utils.bt.base_bt import BaseBT
 
+
 class BTWindows(BaseBT):
     def detect_adapter(self):
         return ("Intel Wireless Bluetooth OK", "", 0)

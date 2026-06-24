@@ -1,31 +1,17 @@
 """Reporting agent node"""
 
-import sys
-import os
 import json
-
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
-from framework.agentic_ai.state.orchestrator_state import OrchestratorState
+from langchain.agents import create_agent
+from langchain_core.messages import HumanMessage
+
 from framework.agentic_ai.llm.gen_engine_llm import GenEngineLLM
 from framework.agentic_ai.prompts.agent_prompts import report_agent_prompt
+from framework.agentic_ai.state.orchestrator_state import OrchestratorState
 from framework.agentic_ai.tools.jira_tool import jira_tools
 
-from langchain_core.messages import HumanMessage
-from langchain.agents import create_agent
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Add project root BEFORE any framework imports
-current = Path(__file__).resolve()
-
-for parent in current.parents:
-    if (parent / "framework").exists():
-        sys.path.insert(0, str(parent))
-        break
-
-llm = GenEngineLLM().get_llm_model()
 
 def _resolve_latest_execution() -> str:
     reports_dir = Path("reports")
@@ -60,8 +46,9 @@ def report_agent(state: OrchestratorState) -> OrchestratorState:
     timestamp = state.get("timestamp") or _resolve_latest_execution()
     state["timestamp"] = timestamp
 
+    
     agent = create_agent(
-        model=llm,
+        model=GenEngineLLM().get_llm_model(),
         tools=jira_tools,
     )
 

@@ -1,13 +1,11 @@
-import sys
 import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from abc import ABC, abstractmethod
-from framework.core.test_result import TestResult
-from framework.core.logger import setup_logger
-from framework.core.user_input_parser import ParseUserInput
 from core.test_engine import TestEngine
-from pathlib import Path
+
+from framework.core.logger import setup_logger
+from framework.core.test_result import TestResult
 
 
 class BaseTest(TestEngine):

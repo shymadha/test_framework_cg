@@ -22,6 +22,7 @@ to abstract OS differences.
 
 from framework.utilities.os_utils.bt.base_bt import BaseBT
 
+
 class BTLinux(BaseBT):
     def detect_adapter(self):
         return ("Bus 001 Device 003: ID 0a12:0001 Cambridge Silicon Radio Bluetooth Dongle", "", 0)

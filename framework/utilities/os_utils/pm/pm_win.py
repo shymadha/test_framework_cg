@@ -1,18 +1,9 @@
 # pm_windows.py
-import ctypes
-import logging
-import sys
 import os
-import subprocess
-from datetime import datetime, time, timedelta
-from unittest import result
-import socket
-import time
+import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from framework.utilities.os_utils.os_base import OSBase
 from framework.utilities.os_utils.pm.pm_base import PMBase
-from core.logger import setup_logger
 
 
 class PMWindows(PMBase):

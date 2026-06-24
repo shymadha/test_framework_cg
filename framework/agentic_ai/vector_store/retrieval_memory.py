@@ -3,13 +3,14 @@ Retrieval Pipeline
 """
 
 import os
-from typing import List, Optional
 import uuid
-from openai import OpenAI
-from langchain_community.retrievers import BM25Retriever
-from langchain_core.documents import Document
+from typing import List, Optional
+
 import chromadb
 from dotenv import load_dotenv
+from langchain_community.retrievers import BM25Retriever
+from langchain_core.documents import Document
+from openai import OpenAI
 
 load_dotenv()
 

@@ -1,6 +1,6 @@
 """Orchestrator State Module"""
 
-from typing import TypedDict, Optional, Dict, Literal, List
+from typing import Dict, List, Literal, Optional, TypedDict
 
 
 class OrchestratorState(TypedDict):

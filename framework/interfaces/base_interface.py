@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class TestInterface(ABC):
     """
     Abstract base class defining the contract for all test interfaces.

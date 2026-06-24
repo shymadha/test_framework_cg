@@ -1,10 +1,9 @@
-import sys
 import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from interfaces.ssh_interface import SSHInterface
-from interfaces.serial_interface import SerialInterface
 from interfaces.local_test_interface import LocalTestInterface
+from interfaces.ssh_interface import SSHInterface
 
 
 class InterfaceFactory:

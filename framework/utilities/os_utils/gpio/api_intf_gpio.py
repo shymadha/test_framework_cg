@@ -77,12 +77,15 @@
 #         return self.__gpio_obj.detect_interrupt(pin)
 
 
+import os
 # framework/utilities/os_utils/api_intf_gpio.py
-import sys, os
+import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from framework.utilities.os_utils.gpio.gpio_linux import GPIOLinux
 from framework.utilities.os_utils.gpio.gpio_win import GPIOWindows
+
 
 class GpioUtilsAPI:
     """

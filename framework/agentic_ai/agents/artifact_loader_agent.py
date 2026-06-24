@@ -1,20 +1,8 @@
 """Artifact Loader Module"""
 
-import sys
-import os
 from pathlib import Path
 
 from framework.agentic_ai.state.orchestrator_state import OrchestratorState
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Add project root BEFORE any framework imports
-current = Path(__file__).resolve()
-
-for parent in current.parents:
-    if (parent / "framework").exists():
-        sys.path.insert(0, str(parent))
-        break
 
 
 def artifact_loader(state: OrchestratorState) -> OrchestratorState:
@@ -33,12 +21,6 @@ def artifact_loader(state: OrchestratorState) -> OrchestratorState:
     if not logs_base.exists():
         raise FileNotFoundError("Logs directory does not exist")
 
-    # -------------------------------------------------
-    # Resolve execution scope
-    # -------------------------------------------------
-    # 1. Explicit timestamp (from report/rca request)
-    # 2. Otherwise, latest execution directory
-    # -------------------------------------------------
 
     execution_dir: Path | None = None
 
@@ -58,17 +40,11 @@ def artifact_loader(state: OrchestratorState) -> OrchestratorState:
         execution_dir = sorted(execution_dirs, key=lambda d: d.name)[-1]
         state["timestamp"] = execution_dir.name
 
-    # -------------------------------------------------
-    # Resolve framework.log
-    # -------------------------------------------------
     framework_log = execution_dir / "framework.log"
 
     if not framework_log.exists():
         raise FileNotFoundError(f"framework.log not found in {execution_dir}")
 
-    # -------------------------------------------------
-    # Update orchestrator state
-    # -------------------------------------------------
     state["artifact_path"] = str(framework_log)
 
     return state

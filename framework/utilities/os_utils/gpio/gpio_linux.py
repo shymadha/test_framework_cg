@@ -27,10 +27,13 @@
 #         return self.platform_obj.exec_cmd(f"echo rising > /sys/class/gpio/gpio{pin}/edge", "ssh")
 
 
+import os
 # framework/utilities/os_utils/gpio/gpio_linux.py
-import sys, os
+import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from framework.utilities.os_utils.gpio.gpio_base import GPIOBase
+
 
 class GPIOLinux(GPIOBase):
     """

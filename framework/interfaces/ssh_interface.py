@@ -1,11 +1,12 @@
-import sys
 import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import paramiko
 import socket
-from interfaces.base_interface import TestInterface
+
+import paramiko
 from core.logger import setup_logger
+from interfaces.base_interface import TestInterface
 
 
 class SSHInterface(TestInterface):

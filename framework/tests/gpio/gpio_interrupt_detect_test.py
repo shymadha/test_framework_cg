@@ -19,8 +19,10 @@ Intended use:
 - Validate framework flow without requiring real GPIO interrupts.
 """
 
-import sys, os
+import os
+import sys
 from pathlib import Path
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 current = Path(__file__).resolve()
@@ -29,8 +31,10 @@ for parent in current.parents:
         sys.path.insert(0, str(parent))
         break
 
-from framework.tests.base_test import BaseTest
 from core.testbed_utils import TestbedUtils
+
+from framework.tests.base_test import BaseTest
+
 # GpioUtilsAPI import removed since hardware interaction is skipped
 
 class GpioInterruptDetectTest(BaseTest):

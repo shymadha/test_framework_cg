@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 from pathlib import Path
 
 # Ensure project root is on sys.path (same as CPU tests)
@@ -10,19 +10,18 @@ for parent in current.parents:
         sys.path.insert(0, str(parent))
         break
 
-import argparse
-import importlib
-import json
-import socket
-import gradio as gr
-import io
 import contextlib
-import traceback
-import pkgutil
+import importlib
 import inspect
-import time
+import io
+import json
+import pkgutil
 import re
-from datetime import datetime
+import socket
+import time
+import traceback
+
+import gradio as gr
 
 
 # ---------------------------
@@ -151,6 +150,7 @@ def _run_single_test(config_file, module_path, class_name):
     start_ts = time.time()
 
     import logging
+
     import framework.core.logger as framework_logger
 
     # Save original setup_logger to restore it later
@@ -458,7 +458,7 @@ def create_ui():
                 # Wrap existing report logic to return as HTML
                 report = execute_tests(ConfigWrapper(config_path), selected_ids)
                 return f"<div style='padding: 10px;'>{report}</div>"
-            except Exception as e:
+            except Exception:
                 return f"<div style='color: #ff4b4b;'>## ❌ Execution Error<br><pre>{traceback.format_exc()}</pre></div>"
 
         refresh_btn.click(fn=on_refresh, inputs=[], outputs=[test_selector, info_display])
