@@ -27,7 +27,7 @@ from framework.tests.base_test import BaseTest
 from framework.utilities.os_utils.bt.api_intf_bt import BTUtilsAPI
 
 
-class BtEnablePowerOnTest(BaseTest):
+class BtEnablePoweronTest(BaseTest):
     def pre_test(self):
         super().pre_test()
 
@@ -45,5 +45,5 @@ class BtEnablePowerOnTest(BaseTest):
         return status
 
 if __name__ == "__main__":
-    test = BtEnablePowerOnTest()
+    test = BtEnablePoweronTest()
     test.run()

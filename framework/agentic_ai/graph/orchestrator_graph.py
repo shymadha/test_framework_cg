@@ -1,9 +1,5 @@
 """Orchestrator Graph Module"""
 
-import os
-import sys
-from pathlib import Path
-
 from langgraph.graph import END, StateGraph
 
 from framework.agentic_ai.agents.analysis_agent import analysis_agent
@@ -14,16 +10,6 @@ from framework.agentic_ai.agents.report_agent import report_agent
 from framework.agentic_ai.agents.reporting_placeholder import \
     reporting_placeholder
 from framework.agentic_ai.state.orchestrator_state import OrchestratorState
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Add project root BEFORE any framework imports
-current = Path(__file__).resolve()
-
-for parent in current.parents:
-    if (parent / "framework").exists():
-        sys.path.insert(0, str(parent))
-        break
 
 
 def route_by_intent(state: OrchestratorState):
