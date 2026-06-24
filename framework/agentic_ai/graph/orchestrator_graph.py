@@ -1,24 +1,19 @@
 """Orchestrator Graph Module"""
 
-import sys
 import os
+import sys
 from pathlib import Path
 
-from langgraph.graph import StateGraph, END
-from framework.agentic_ai.state.orchestrator_state import OrchestratorState
+from langgraph.graph import END, StateGraph
 
-from framework.agentic_ai.agents.orchestrator_agent import (
-    orchestrator_agent,
-)
-from framework.agentic_ai.agents.executor_agent import executor_agent
-from framework.agentic_ai.agents.artifact_loader_agent import (
-    artifact_loader,
-)
 from framework.agentic_ai.agents.analysis_agent import analysis_agent
+from framework.agentic_ai.agents.artifact_loader_agent import artifact_loader
+from framework.agentic_ai.agents.executor_agent import executor_agent
+from framework.agentic_ai.agents.orchestrator_agent import orchestrator_agent
 from framework.agentic_ai.agents.report_agent import report_agent
-from framework.agentic_ai.agents.reporting_placeholder import (
-    reporting_placeholder,
-)
+from framework.agentic_ai.agents.reporting_placeholder import \
+    reporting_placeholder
+from framework.agentic_ai.state.orchestrator_state import OrchestratorState
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

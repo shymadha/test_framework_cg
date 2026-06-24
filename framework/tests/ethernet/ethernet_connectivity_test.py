@@ -1,5 +1,4 @@
 import sys
-import os
 from pathlib import Path
 
 # Ensure project root is on sys.path (same as CPU tests)
@@ -10,7 +9,6 @@ for parent in current.parents:
         break
 
 from framework.tests.base_test import BaseTest
-from framework.utilities.os_utils.ethernet.api_intf_ethernet import EthernetUtilsAPI
 from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
 
 

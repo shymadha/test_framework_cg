@@ -1,19 +1,19 @@
 # api_intf_os_base.py
-import sys
 import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from framework.utilities.os_utils.cpu.api_intf_cpu import CpuUtilsAPI
-from framework.utilities.os_utils.ethernet.api_intf_ethernet import EthernetUtilsAPI
-from framework.utilities.os_utils.pm.api_intf_pm import PmUtilsAPI
-from framework.utilities.os_utils.usb.api_intf_usb import (
-    USBUtilsAPI,
-    USBMassStorageAPI,
-    USBDataIntegrityAPI,
-    USBSerialFT232API,
-)
+from framework.utilities.os_utils.ethernet.api_intf_ethernet import \
+    EthernetUtilsAPI
 from framework.utilities.os_utils.memory.api_intf_memory import MemoryUtilsAPI
-from framework.utilities.os_utils.storage.api_intf_storage import StorageUtilsAPI
+from framework.utilities.os_utils.pm.api_intf_pm import PmUtilsAPI
+from framework.utilities.os_utils.storage.api_intf_storage import \
+    StorageUtilsAPI
+from framework.utilities.os_utils.usb.api_intf_usb import (USBDataIntegrityAPI,
+                                                           USBMassStorageAPI,
+                                                           USBSerialFT232API,
+                                                           USBUtilsAPI)
 
 
 class OSBaseAPI:

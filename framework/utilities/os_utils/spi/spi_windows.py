@@ -1,5 +1,6 @@
 from framework.utilities.os_utils.spi.base_spi import BaseSPI
 
+
 class SPIWindows(BaseSPI):
     def device_detection(self):
         return "powershell Get-PnpDevice | Where-Object { $_.FriendlyName -match 'SPI|CH341|FT232H' }"

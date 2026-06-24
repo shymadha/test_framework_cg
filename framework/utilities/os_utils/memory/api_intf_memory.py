@@ -1,10 +1,11 @@
-import sys
 import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from framework.utilities.os_utils.memory.memory_win import MemoryWindows
 from framework.utilities.os_utils.memory.memory_linux import MemoryLinux
+from framework.utilities.os_utils.memory.memory_win import MemoryWindows
+
 
 class MemoryUtilsAPI:
     def __init__(self, os_name, platform_obj):

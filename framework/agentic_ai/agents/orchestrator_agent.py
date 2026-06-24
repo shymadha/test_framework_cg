@@ -1,16 +1,15 @@
 """Orchestrator Agent Node"""
 
-from typing import Dict
 import json
 import re
 from pathlib import Path
+from typing import Dict
 
-from framework.agentic_ai.state.orchestrator_state import OrchestratorState
-from framework.agentic_ai.prompts.agent_prompts import orchestrator_agent_system_prompt
 from framework.agentic_ai.llm.gen_engine_llm import GenEngineLLM
+from framework.agentic_ai.prompts.agent_prompts import \
+    orchestrator_agent_system_prompt
+from framework.agentic_ai.state.orchestrator_state import OrchestratorState
 
-
-llm = GenEngineLLM().get_llm_model()
 ALLOWED_STEPS = {"execute_test", "run_rca_if_failed", "generate_report"}
 
 
@@ -97,6 +96,8 @@ def orchestrator_agent(state: OrchestratorState) -> Dict:
         system_prompt = orchestrator_agent_system_prompt.format(
             test_catalog=test_catalog
         )
+
+        llm = GenEngineLLM().get_llm_model()
 
         response = llm.invoke(
             [

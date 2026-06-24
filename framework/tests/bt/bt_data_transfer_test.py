@@ -1,5 +1,5 @@
 """
-BTDataTransferTest
+BtDataTransferTest
 ------------------
 
 This test validates Bluetooth RFCOMM data transfer functionality on both Linux and Windows platforms.
@@ -22,19 +22,11 @@ Expected Results:
 - Simulation ensures PASS even if hardware is absent, aligned with Excel sheet expectations.
 """
 
-import sys
-from pathlib import Path
-
-current = Path(__file__).resolve()
-for parent in current.parents:
-    if (parent / "framework").exists():
-        sys.path.insert(0, str(parent))
-        break
-
 from framework.tests.base_test import BaseTest
 from framework.utilities.os_utils.bt.api_intf_bt import BTUtilsAPI
 
-class BTDataTransferTest(BaseTest):
+
+class BtDataTransferTest(BaseTest):
     def pre_test(self):
         super().pre_test()
 
@@ -52,5 +44,5 @@ class BTDataTransferTest(BaseTest):
         return status
 
 if __name__ == "__main__":
-    test = BTDataTransferTest()
+    test = BtDataTransferTest()
     test.run()

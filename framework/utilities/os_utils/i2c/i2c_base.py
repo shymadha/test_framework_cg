@@ -21,6 +21,7 @@ sheet expectations.
 
 from framework.utilities.os_utils.os_base import OSBase
 
+
 class I2CBase(OSBase):
     def list_buses(self): raise NotImplementedError
     def scan_bus(self, bus_id): raise NotImplementedError

@@ -1,5 +1,4 @@
 import sys
-import os
 from pathlib import Path
 
 current = Path(__file__).resolve()

@@ -1,6 +1,7 @@
-import sys
 import os
+import sys
 from pathlib import Path
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 current = Path(__file__).resolve()
@@ -9,17 +10,14 @@ for parent in current.parents:
         sys.path.insert(0, str(parent))
         break
 
-import argparse
-from framework.core.test_engine import TestEngine
-from framework.core.user_input_parser import ParseUserInput
-from tests.base_test import BaseTest
 from core.testbed_utils import TestbedUtils
-from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
+from tests.base_test import BaseTest
+
 from framework.tests.base_test import BaseTest
-from framework.utilities.os_utils.pm.pm_base import PMBase
+from framework.utilities.os_utils.api_intf_os_base import OSBaseAPI
 
 
-class SleepTest(BaseTest):
+class S3Test(BaseTest):
     """
     Test case to validate system sleep (S3) behavior on the target platform.
 
@@ -89,9 +87,9 @@ class SleepTest(BaseTest):
 
 if __name__ == "__main__":
     """
-    Entry point to execute the SleepTest as a standalone script.
+    Entry point to execute the S5Test as a standalone script.
 
-    Instantiates SleepTest and runs it using the BaseTest/TestEngine workflow.
+    Instantiates S3Test and runs it using the BaseTest/TestEngine workflow.
     """
-    test = SleepTest()
+    test = S3Test()
     test.run()

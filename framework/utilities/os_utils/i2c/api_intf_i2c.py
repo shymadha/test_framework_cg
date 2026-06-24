@@ -31,6 +31,7 @@ interface regardless of platform.
 from framework.utilities.os_utils.i2c.i2c_linux import I2CLinux
 from framework.utilities.os_utils.i2c.i2c_win import I2CWindows
 
+
 class I2CUtilsAPI:
     def __init__(self, os_name, platform_obj):
         self.platform_obj = platform_obj

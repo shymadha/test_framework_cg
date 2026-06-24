@@ -2,6 +2,7 @@ import logging
 import os
 from datetime import datetime
 
+
 class ExactLevelFilter(logging.Filter):
     """
     A logging filter that allows only log records matching a specific log level.

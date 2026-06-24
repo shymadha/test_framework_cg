@@ -50,10 +50,13 @@
 #     def detect_interrupt(self, pin):
 #         return self.platform_obj.exec_cmd("gpiod event wait", "ssh")
 
+import os
 # framework/utilities/os_utils/gpio/gpio_win.py
-import sys, os
+import sys
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from framework.utilities.os_utils.gpio.gpio_base import GPIOBase
+
 
 class GPIOWindows(GPIOBase):
     """

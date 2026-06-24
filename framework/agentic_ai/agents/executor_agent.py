@@ -1,30 +1,17 @@
 """Executor Agent Node"""
 
-from framework.core.test_engine import TestEngine
-from framework.core.logger import setup_logger
-from framework.agentic_ai.tools.test_engine_tool import test_engine_tool
-from framework.agentic_ai.llm.gen_engine_llm import GenEngineLLM
-
 from langchain.agents import create_agent
 
-import sys
-import os
-from pathlib import Path
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Add project root BEFORE any framework imports
-current = Path(__file__).resolve()
-
-for parent in current.parents:
-    if (parent / "framework").exists():
-        sys.path.insert(0, str(parent))
-        break
+from framework.agentic_ai.llm.gen_engine_llm import GenEngineLLM
+from framework.agentic_ai.tools.test_engine_tool import test_engine_tool
+from framework.core.logger import setup_logger
+from framework.core.test_engine import TestEngine
 
 
 def extract_tool_output(response):
-    from langchain_core.messages import ToolMessage
     import json
+
+    from langchain_core.messages import ToolMessage
 
     for msg in reversed(response.get("messages", [])):
         if isinstance(msg, ToolMessage):
@@ -37,9 +24,10 @@ def extract_tool_output(response):
 
 def executor_agent(state):
 
-    import framework.core.logger as logger_module
     from datetime import datetime
     from pathlib import Path
+
+    import framework.core.logger as logger_module
 
     print("Executor Agent Started")
 
@@ -80,7 +68,7 @@ def executor_agent(state):
             return state
 
         logger.info("Initializing TestEngine")
-        engine = TestEngine()
+        TestEngine()
 
         domain = state["test_domain"]
         test_name = state["test_name"]

@@ -1,11 +1,11 @@
 # api_intf_ethernet.py
-import sys
 import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from framework.utilities.os_utils.ethernet.ethernet_win import EthernetWindows
 from framework.utilities.os_utils.ethernet.ethernet_linux import EthernetLinux
+from framework.utilities.os_utils.ethernet.ethernet_win import EthernetWindows
 
 
 class EthernetUtilsAPI:

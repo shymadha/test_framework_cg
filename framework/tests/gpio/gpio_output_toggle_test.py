@@ -1,7 +1,8 @@
-import sys, os
-from pathlib import Path
 import argparse
+import sys
 import webbrowser
+from pathlib import Path
+
 from flask import Flask, jsonify
 
 # Ensure project root is on sys.path
@@ -11,8 +12,9 @@ for parent in current.parents:
         sys.path.insert(0, str(parent))
         break
 
-from framework.tests.base_test import BaseTest
 from core.testbed_utils import TestbedUtils
+
+from framework.tests.base_test import BaseTest
 from framework.utilities.os_utils.gpio.api_intf_gpio import GpioUtilsAPI
 
 

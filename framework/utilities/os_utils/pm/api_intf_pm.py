@@ -1,11 +1,11 @@
 # api_intf_cpu.py  <-- Consider renaming to api_intf_pm.py for clarity
-import sys
 import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from framework.utilities.os_utils.pm.pm_win import PMWindows
 from framework.utilities.os_utils.pm.pm_linux import PMLinux
+from framework.utilities.os_utils.pm.pm_win import PMWindows
 
 
 class PmUtilsAPI:

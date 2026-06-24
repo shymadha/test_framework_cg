@@ -1,5 +1,6 @@
 from framework.utilities.os_utils.i2c.i2c_base import I2CBase
 
+
 class I2CLinux(I2CBase):
     def list_buses(self):
         return self.platform_obj.exec_cmd("ls /dev/i2c-*", "ssh")

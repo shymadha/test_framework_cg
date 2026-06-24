@@ -1,8 +1,7 @@
-import sys
 import os
+import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from abc import ABC, abstractmethod
 from core.logger import setup_logger
 
 
@@ -97,7 +96,7 @@ class BasePlatform:
         if intf:
             return intf.execute(command)
         else:
-            raise ValueError(f"No interface found to execute command")
+            raise ValueError("No interface found to execute command")
 
     def detect_os(self):
         """

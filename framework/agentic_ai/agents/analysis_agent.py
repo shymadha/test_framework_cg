@@ -1,23 +1,16 @@
 """RCA agent node"""
 
-import sys
 import json
 from pathlib import Path
-from langchain_core.messages import SystemMessage, HumanMessage
+
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.output_parsers import JsonOutputParser
 
 from framework.agentic_ai.llm.gen_engine_llm import GenEngineLLM
 from framework.agentic_ai.prompts.agent_prompts import rca_agent_prompt
 from framework.agentic_ai.state.orchestrator_state import OrchestratorState
-from framework.agentic_ai.vector_store.retrieval_memory import RetrievalPipeline
-
-current = Path(__file__).resolve()
-for parent in current.parents:
-    if (parent / "framework").exists():
-        sys.path.insert(0, str(parent))
-        break
-
-llm = GenEngineLLM().get_llm_model()
+from framework.agentic_ai.vector_store.retrieval_memory import \
+    RetrievalPipeline
 
 
 def analysis_agent(state: OrchestratorState) -> dict:
@@ -129,6 +122,7 @@ def analysis_agent(state: OrchestratorState) -> dict:
     """
 
     parser = JsonOutputParser()
+    llm = GenEngineLLM().get_llm_model()
     chain = llm | parser
 
     try:

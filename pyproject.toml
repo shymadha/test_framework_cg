@@ -1,0 +1,7 @@
+# pyproject.toml
+[tool.ruff]
+select = ["E402"]
+
+[tool.ruff.lint]
+fixable = ["E402"]
+``

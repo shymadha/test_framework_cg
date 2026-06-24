@@ -17,18 +17,11 @@ USBSerialFT232API    -> USB-004  Serial FT232 Loopback
 """
 
 from framework.utilities.os_utils.usb.usb_linux import (
-    USBDeviceDetectionLinux,
-    USBMassStorageLinux,
-    USBDataIntegrityLinux,
-    USBSerialFT232Linux,
-)
+    USBDataIntegrityLinux, USBDeviceDetectionLinux, USBMassStorageLinux,
+    USBSerialFT232Linux)
 from framework.utilities.os_utils.usb.usb_win import (
-    USBDeviceDetectionWindows,
-    USBMassStorageWindows,
-    USBDataIntegrityWindows,
-    USBSerialFT232Windows,
-)
-
+    USBDataIntegrityWindows, USBDeviceDetectionWindows, USBMassStorageWindows,
+    USBSerialFT232Windows)
 
 # ===========================================================================
 # USB-001 - Device Detection API

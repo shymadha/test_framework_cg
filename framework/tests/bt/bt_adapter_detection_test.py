@@ -1,17 +1,11 @@
-import sys
-from pathlib import Path
 
-current = Path(__file__).resolve()
-for parent in current.parents:
-    if (parent / "framework").exists():
-        sys.path.insert(0, str(parent))
-        break
+from core.testbed_utils import TestbedUtils
 
 from framework.tests.base_test import BaseTest
-from core.testbed_utils import TestbedUtils
 from framework.utilities.os_utils.bt.api_intf_bt import BTUtilsAPI
 
-class BTAdapterDetectionTest(BaseTest):
+
+class BtAdapterDetectionTest(BaseTest):
     def pre_test(self):
         super().pre_test()
         tb = TestbedUtils(self.user_input.args.config)
@@ -35,5 +29,5 @@ class BTAdapterDetectionTest(BaseTest):
         return status
 
 if __name__ == "__main__":
-    test = BTAdapterDetectionTest()
+    test = BtAdapterDetectionTest()
     test.run()

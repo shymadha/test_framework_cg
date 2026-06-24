@@ -25,7 +25,9 @@ This API ensures CLI and UI tests can call the same interface regardless of OS, 
 """
 
 from framework.utilities.os_utils.bt.bt_linux import BTLinux
-from framework.utilities.os_utils.bt.bt_win import BTWindows   # <-- updated import
+from framework.utilities.os_utils.bt.bt_win import \
+    BTWindows  # <-- updated import
+
 
 class BTUtilsAPI:
     def __init__(self, os_type, platform_obj):

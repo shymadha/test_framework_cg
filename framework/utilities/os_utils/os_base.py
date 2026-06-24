@@ -10,7 +10,7 @@ Disk, and Power Management modules.
 
 import platform
 import socket
-import time
+
 # import psutil
 
 

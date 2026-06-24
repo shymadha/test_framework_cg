@@ -19,8 +19,10 @@ Intended use:
 - Validate GPIO input functionality on BeagleBone or other supported platforms.
 """
 
-import sys, os
+import os
+import sys
 from pathlib import Path
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Add project root BEFORE any framework imports
@@ -30,9 +32,11 @@ for parent in current.parents:
         sys.path.insert(0, str(parent))
         break
 
-from framework.tests.base_test import BaseTest
 from core.testbed_utils import TestbedUtils
+
+from framework.tests.base_test import BaseTest
 from framework.utilities.os_utils.gpio.api_intf_gpio import GpioUtilsAPI
+
 
 class GpioInputReadTest(BaseTest):
     """Test case for reading a GPIO input pin."""

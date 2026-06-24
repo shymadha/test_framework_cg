@@ -1,5 +1,6 @@
 from framework.utilities.os_utils.i2c.i2c_base import I2CBase
 
+
 class I2CWindows(I2CBase):
     def list_buses(self):
         cmd = "Get-PnpDevice -Class System | Where-Object {$_.FriendlyName -match 'I2C'} | Select-Object FriendlyName, Status"
