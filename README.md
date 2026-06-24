@@ -62,3 +62,6 @@ cpu frequency test
 
 - Final Test Execution Report will be generated after the test run
 <img width="822" height="393" alt="image" src="https://github.com/user-attachments/assets/9c010628-29d1-49cf-81b2-bc3b9e6a9853" />
+
+## Note: Tests can only be executed when the machine is connected to a BeagleBone Board.
+
