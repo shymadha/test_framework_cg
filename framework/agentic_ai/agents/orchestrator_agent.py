@@ -8,9 +8,26 @@ from typing import Dict
 from framework.agentic_ai.llm.gen_engine_llm import GenEngineLLM
 from framework.agentic_ai.prompts.agent_prompts import \
     orchestrator_agent_system_prompt
+from framework.agentic_ai.security.validators import (
+    PromptInjectionError,
+    StateIntegrityError,
+    sanitize_user_input,
+    validate_orchestrator_plan,
+    validate_state,
+)
 from framework.agentic_ai.state.orchestrator_state import OrchestratorState
 
 ALLOWED_STEPS = {"execute_test", "run_rca_if_failed", "generate_report"}
+
+# Canonical mapping: LLM intent values → graph routing keys
+_INTENT_NORMALISE = {
+    "execute":   "execute",
+    "analyze":   "rca",
+    "summarize": "report",
+    # also accept the routing keys directly in case the LLM uses them
+    "rca":       "rca",
+    "report":    "report",
+}
 
 
 def sanitize_steps(steps):
@@ -87,7 +104,18 @@ def rule_based_interpreter(state: OrchestratorState):
 def orchestrator_agent(state: OrchestratorState) -> Dict:
 
     print("Orchestrator Agent Started")
-    user_input = state["user_request"]
+    raw_user_input = state["user_request"]
+
+    # --- Security: sanitize and check for injection before touching LLM ---
+    try:
+        user_input = sanitize_user_input(raw_user_input)
+    except PromptInjectionError as exc:
+        print(f"[SECURITY] Prompt injection blocked in user_request: {exc}")
+        return {
+            "status": "FAILED",
+            "execution_status": "FAILED",
+            "execution_output": {"error": "Prompt injection detected in user request"},
+        }
 
     try:
         test_map = discover_tests()
@@ -109,6 +137,12 @@ def orchestrator_agent(state: OrchestratorState) -> Dict:
         content = response.content
         plan = safe_parse_json(content)
 
+        # --- Security: validate plan fields against whitelist ---
+        validate_orchestrator_plan(plan)
+
+    except (PromptInjectionError, StateIntegrityError) as exc:
+        print(f"[SECURITY] Plan validation failed: {exc}")
+        return rule_based_interpreter(state)
     except Exception as e:
         print("LLM failed, falling back:", str(e))
         return rule_based_interpreter(state)
@@ -116,7 +150,11 @@ def orchestrator_agent(state: OrchestratorState) -> Dict:
     raw_steps = plan.get("steps", [])
     steps = sanitize_steps(raw_steps)
 
-    if plan.get("intent") == "execute" and "execute_test" not in steps:
+    # Normalise intent: LLM may output "analyze"/"summarize"; graph needs "rca"/"report"
+    raw_intent = plan.get("intent", "")
+    intent = _INTENT_NORMALISE.get(raw_intent, raw_intent)
+
+    if intent == "execute" and "execute_test" not in steps:
         print("Injecting missing execute_test")
         steps.insert(0, "execute_test")
 
@@ -126,7 +164,10 @@ def orchestrator_agent(state: OrchestratorState) -> Dict:
     if not test_domain or not test_name:
         print("LLM failed to map test → fallback matching")
         fallback_state = {}
-        extract_metadata_from_framework(user_input.lower(), fallback_state)
+        try:
+            extract_metadata_from_framework(user_input.lower(), fallback_state)
+        except ValueError:
+            pass
         test_domain = fallback_state.get("test_domain")
         test_name = fallback_state.get("test_name")
 
@@ -136,7 +177,7 @@ def orchestrator_agent(state: OrchestratorState) -> Dict:
         method = None
 
     final_state = {
-        "intent": plan.get("intent"),
+        "intent": intent,
         "request_type": plan.get("request_type"),
         "execution_plan": steps,
         "current_step_index": 0,
@@ -146,7 +187,14 @@ def orchestrator_agent(state: OrchestratorState) -> Dict:
         "execution_method": method,
         "status": "CLASSIFYING",
     }
-    
+
+    # --- Security: validate the state we are about to emit ---
+    try:
+        validate_state(final_state)
+    except StateIntegrityError as exc:
+        print(f"[SECURITY] Outgoing state failed integrity check: {exc}")
+        return rule_based_interpreter(state)
+
     print(f"Test Execution Details: {final_state}")
     return final_state
 
