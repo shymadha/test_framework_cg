@@ -1,8 +1,25 @@
 """Test Engine Tool module"""
 
 import importlib
+import re
 
 from langchain.tools import tool
+
+from framework.agentic_ai.security.validators import (
+    StateIntegrityError,
+    check_tool_rate,
+)
+
+_SAFE_IDENTIFIER = re.compile(r"^[a-zA-Z0-9_]+$")
+
+
+def _assert_safe_identifier(value: str, field: str) -> None:
+    """Reject any value that is not a plain alphanumeric/underscore identifier."""
+    if not value or not _SAFE_IDENTIFIER.match(value):
+        raise StateIntegrityError(
+            f"Unsafe value for {field!r}: {value!r}. "
+            "Only alphanumeric characters and underscores are allowed."
+        )
 
 
 def snake_to_camel(snake: str) -> str:
@@ -40,6 +57,13 @@ def run_test_tool(domain: str, test_name: str, log_dir: str) -> dict:
         dict: execution result
     """
     print("Executor Agent Calling Test Engine Tool")
+
+    # --- Security: rate limiting ---
+    check_tool_rate("run_test_tool")
+
+    # --- Security: identifier validation (prevents path traversal / code injection) ---
+    _assert_safe_identifier(domain, "domain")
+    _assert_safe_identifier(test_name, "test_name")
 
     TestClass = load_test_class(domain, test_name)
     test_instance = TestClass()

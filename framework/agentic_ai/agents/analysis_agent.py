@@ -8,9 +8,17 @@ from langchain_core.output_parsers import JsonOutputParser
 
 from framework.agentic_ai.llm.gen_engine_llm import GenEngineLLM
 from framework.agentic_ai.prompts.agent_prompts import rca_agent_prompt
+from framework.agentic_ai.security.validators import (
+    RCAPoisoningError,
+    sanitize_log_text,
+    validate_rca_output,
+)
 from framework.agentic_ai.state.orchestrator_state import OrchestratorState
 from framework.agentic_ai.vector_store.retrieval_memory import \
     RetrievalPipeline
+
+# Minimum confidence score required to accept a Tier 1 historical match
+TIER1_CONFIDENCE_THRESHOLD = 0.90
 
 
 def analysis_agent(state: OrchestratorState) -> dict:
@@ -18,10 +26,13 @@ def analysis_agent(state: OrchestratorState) -> dict:
     Performs Root Cause Analysis (RCA) on test log.
 
     Tiered Logic:
-    1. Check historical analysis (historical_store): If exact match (confidence > 90%), return it.
-    2. Fallback to context-aware analysis (doc_store): Retrieve documentation context and perform RCA.
-    3. Final fallback: If context is not relevant, perform fresh LLM analysis on logs only.
-    4. Commit fresh results back to historical analysis store.
+    1. Check historical analysis (historical_store): If exact match AND
+       confidence > TIER1_CONFIDENCE_THRESHOLD, return it.
+    2. Fallback to context-aware analysis (doc_store): Retrieve documentation
+       context and perform RCA.
+    3. Final fallback: Fresh LLM analysis on logs only.
+    4. Validate RCA output for poisoning before committing or returning.
+    5. Commit fresh results back to historical analysis store.
     """
 
     print("\n RCA agent started")
@@ -51,7 +62,10 @@ def analysis_agent(state: OrchestratorState) -> dict:
         raise FileNotFoundError(f"Log file not found: {log_file}")
 
     with log_file.open("r", encoding="utf-8", errors="ignore") as f:
-        log_text = f.read()
+        raw_log_text = f.read()
+
+    # --- Security: sanitize log content before any LLM use ---
+    log_text = sanitize_log_text(raw_log_text)
 
     if not log_text.strip():
         return {
@@ -68,15 +82,32 @@ def analysis_agent(state: OrchestratorState) -> dict:
 
     query = f"Failure analysis for log: {log_text[:2000]}"
     try:
-        # Check if collection has any data before searching
         if hist_retriever.collection.count() > 0:
             hist_results = hist_retriever.similarity_search(query)
-            if hist_results and hist_results[0]["metadata"]['test_name'] == state['execution_output']['test']:
-                print("Exact historical match found")
-                return {
-                    "analysis_output": json.loads(hist_results[0]["content"]),
-                    "status": "ANALYZING",
-                }
+            if hist_results:
+                candidate = hist_results[0]
+                meta = candidate.get("metadata", {})
+                # Only accept if test_name matches AND confidence exceeds threshold
+                hist_confidence = float(meta.get("confidence", 0.0))
+                if (
+                    meta.get("test_name") == state.get("execution_output", {}).get("test")
+                    and hist_confidence >= TIER1_CONFIDENCE_THRESHOLD
+                ):
+                    print(f"Exact historical match found (confidence={hist_confidence})")
+                    cached = json.loads(candidate["content"])
+                    # --- Security: validate cached RCA before returning it ---
+                    try:
+                        cached = validate_rca_output(cached)
+                    except RCAPoisoningError as exc:
+                        print(f"[SECURITY] Cached RCA poisoned, discarding: {exc}")
+                        # Fall through to fresh analysis
+                    else:
+                        return {"analysis_output": cached, "status": "ANALYZING"}
+                else:
+                    print(
+                        f"Historical match confidence {hist_confidence:.2f} "
+                        f"below threshold {TIER1_CONFIDENCE_THRESHOLD} → continuing"
+                    )
         else:
             print("historical store is empty. Skipping Tier 1.")
     except Exception as e:
@@ -136,6 +167,19 @@ def analysis_agent(state: OrchestratorState) -> dict:
         print(f"LLM RCA failed: {e}")
         analysis_output = {"root_cause": "LLM analysis failed", "summary": str(e)}
 
+    # --- Security: validate LLM RCA output before storing or returning ---
+    try:
+        analysis_output = validate_rca_output(analysis_output)
+    except RCAPoisoningError as exc:
+        print(f"[SECURITY] RCA output failed validation: {exc}")
+        analysis_output = {
+            "root_cause": "RCA output rejected by security validator",
+            "evidence": [],
+            "confidence": 0.0,
+            "summary": str(exc),
+            "recommended_fix": "Review logs manually",
+        }
+
     try:
         print("Committing analysis to historical store...")
         hist_retriever.add_document(
@@ -144,6 +188,7 @@ def analysis_agent(state: OrchestratorState) -> dict:
                 "type": "historical_analysis",
                 "test_name": state.get("test_name", "unknown"),
                 "has_context": bool(retrieval_context),
+                "confidence": analysis_output.get("confidence", 0.0),
             },
         )
     except Exception as e:
