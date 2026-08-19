@@ -1,8 +1,7 @@
----
 id: TASK-002
 title: Implement Playback Start and Transport Validation
 status: draft
-parent: REQ-1
+parent: REQ-001
 layer: test
 effort: M
 tier: 2

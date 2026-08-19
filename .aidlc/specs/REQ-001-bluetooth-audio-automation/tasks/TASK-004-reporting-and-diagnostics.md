@@ -1,8 +1,7 @@
----
 id: TASK-004
 title: Emit Markdown Report and Enhance Diagnostics
 status: draft
-parent: REQ-1
+parent: REQ-001
 layer: reporting
 effort: S
 tier: 3

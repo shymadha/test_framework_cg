@@ -1,5 +1,4 @@
----
-id: REQ-1
+id: REQ-001
 title: Bluetooth Audio Automation Test
 status: approved
 priority: high
