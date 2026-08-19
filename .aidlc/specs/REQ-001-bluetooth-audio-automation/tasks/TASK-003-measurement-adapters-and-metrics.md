@@ -1,6 +1,6 @@
 id: TASK-003
 title: Add Optional Measurement Adapters (APEX/MOSCORE) and Metric Thresholds
-status: draft
+status: complete
 parent: REQ-001
 layer: utilities
 effort: M

@@ -1,6 +1,6 @@
 id: TASK-001
 title: Create Bluetooth Audio Test Skeleton (BaseTest)
-status: draft
+status: complete
 parent: REQ-001
 layer: test
 effort: S
