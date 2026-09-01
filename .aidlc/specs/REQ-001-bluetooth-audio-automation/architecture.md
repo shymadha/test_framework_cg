@@ -1,9 +1,9 @@
 ---
 id: REQ-1
 title: Bluetooth Audio Automation — Architecture
-status: approved
+status: complete
 created: 2026-08-18
-updated: 2026-08-18
+updated: 2026-09-01
 ---
 
 ## Overview
